@@ -46,7 +46,6 @@ const EXERCISES = [
 ].map(([id,name,type,met,secondsPerRep=0,loadFactor=0]) => ({ id,name,type,met,secondsPerRep,loadFactor,supportsIntervals:id==='running' }));
 
 let state = loadState();
-state.selectedDate = Core.localDateString();
 let activeProductId = '';
 let strengthSets = [];
 let runningIntervals = [];

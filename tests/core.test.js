@@ -6,6 +6,7 @@ const defaults = [{ id: 'rice', name: 'Рис', p: 2.7, f: 0.3, c: 28, kcal: 130
 
 test('old state is migrated without losing diary entries', () => {
   const state = Core.normalizeState({
+    selectedDate: '2026-09-09',
     goals: { kcal: 2100, p: 150, f: 70, c: 220 },
     profile: { weightKg: 80, strideCm: 75 },
     products: defaults,
@@ -15,6 +16,7 @@ test('old state is migrated without losing diary entries', () => {
   assert.equal(state.stateVersion, Core.STATE_VERSION);
   assert.equal(state.entries.length, 1);
   assert.equal(state.entries[0].grams, 200);
+  assert.equal(state.selectedDate, '2026-09-09');
   assert.equal(state.goals.activityCredit, 0.5);
   assert.deepEqual(state.savedMeals, []);
   assert.deepEqual(state.wellness, {});
