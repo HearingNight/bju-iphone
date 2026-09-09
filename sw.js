@@ -1,7 +1,7 @@
 const CACHE_PREFIX = 'bju-pwa-';
-const CACHE = `${CACHE_PREFIX}v4`;
+const CACHE = `${CACHE_PREFIX}v5`;
 const APP_SHELL = [
-  './', './index.html', './styles.css', './core.js', './app.js', './manifest.webmanifest',
+  './', './index.html', './styles.css?v=5', './core.js?v=5', './app.js?v=5', './manifest.webmanifest?v=5',
   './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'
 ];
 
