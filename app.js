@@ -1,5 +1,5 @@
 const STORAGE_KEY = 'bju-tracker-v1';
-const PRODUCT_CATALOG_VERSION = 2;
+const PRODUCT_CATALOG_VERSION = 3;
 const MEALS = [
   ['breakfast', 'Завтрак'],
   ['lunch', 'Обед'],
@@ -118,10 +118,37 @@ function localDateString(date = new Date()) {
   return `${y}-${m}-${d}`;
 }
 
+function normalizedProductName(value) {
+  return String(value || '')
+    .trim()
+    .toLocaleLowerCase('ru-RU')
+    .replace(/ё/g, 'е')
+    .replace(/[.,;:()\[\]{}"'«»]/g, ' ')
+    .replace(/\s+/g, ' ');
+}
+
 function mergeDefaultProducts(products) {
-  const existing = Array.isArray(products) ? products : [];
-  const ids = new Set(existing.map(product => product.id));
-  return [...existing, ...DEFAULT_PRODUCTS.filter(product => !ids.has(product.id))];
+  const byName = new Map();
+  const ids = new Set();
+
+  for (const product of Array.isArray(products) ? products : []) {
+    const nameKey = normalizedProductName(product.name);
+    if (!nameKey) continue;
+    const previous = byName.get(nameKey);
+    // A product entered or edited by the user is authoritative over a
+    // built-in item with the same visible name.
+    if (!previous || (previous.builtIn && !product.builtIn)) byName.set(nameKey, product);
+  }
+
+  for (const product of byName.values()) ids.add(product.id);
+  for (const product of DEFAULT_PRODUCTS) {
+    const nameKey = normalizedProductName(product.name);
+    if (!ids.has(product.id) && !byName.has(nameKey)) {
+      byName.set(nameKey, product);
+      ids.add(product.id);
+    }
+  }
+  return [...byName.values()];
 }
 
 function defaultState() {
