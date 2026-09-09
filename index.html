@@ -3,287 +3,108 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#f5f5f7" />
+  <meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#0d0d0f" media="(prefers-color-scheme: dark)" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="БЖУ" />
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <link rel="icon" href="icons/icon-192.png" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="stylesheet" href="styles.css" />
-  <title>БЖУ</title>
+  <title>БЖУ+</title>
 </head>
 <body>
   <div class="app-shell">
     <header class="topbar">
-      <div>
-        <div class="eyebrow">Дневник питания</div>
-        <h1>БЖУ</h1>
-      </div>
-      <button id="install-help" class="icon-button" aria-label="Как установить">i</button>
+      <div><div class="eyebrow">Питание · активность · восстановление</div><h1>БЖУ+</h1></div>
+      <button id="install-help" class="icon-button" type="button" aria-label="Справка и установка">i</button>
     </header>
 
     <main>
-      <section id="today-view" class="view active">
+      <section id="today-view" class="view active" aria-labelledby="today-title">
+        <h2 id="today-title" class="visually-hidden">Дневник за день</h2>
         <div class="date-row card">
-          <button id="prev-day" class="ghost-button" aria-label="Предыдущий день">‹</button>
-          <div class="date-center">
-            <div id="selected-date-label" class="date-label"></div>
-            <button id="today-button" class="today-link">Сегодня</button>
-          </div>
-          <button id="next-day" class="ghost-button" aria-label="Следующий день">›</button>
+          <button id="prev-day" class="ghost-button" type="button" aria-label="Предыдущий день">‹</button>
+          <div class="date-center"><div id="selected-date-label" class="date-label"></div><button id="today-button" class="today-link" type="button">Сегодня</button></div>
+          <button id="next-day" class="ghost-button" type="button" aria-label="Следующий день">›</button>
         </div>
 
-        <section class="summary card">
-          <div class="calorie-ring" id="calorie-ring">
-            <div>
-              <strong id="kcal-total">0</strong>
-              <span>ккал</span>
-            </div>
-          </div>
+        <section class="summary card" aria-label="Итоги калорий">
+          <div class="calorie-ring" id="calorie-ring"><div><strong id="kcal-total">0</strong><span>ккал съедено</span></div></div>
           <div class="calorie-copy">
-            <div class="goal-line"><span>Цель</span><strong id="kcal-goal">2200</strong></div>
-            <div class="goal-line burn-line"><span>Потрачено</span><strong id="kcal-burned">0</strong></div>
-            <div class="goal-line"><span>Чистый итог</span><strong id="kcal-net">0</strong></div>
-            <div class="goal-line"><span>Можно ещё</span><strong id="kcal-left">2200</strong></div>
+            <div class="goal-line"><span>Цель питания</span><strong id="kcal-goal">2200</strong></div>
+            <div class="goal-line burn-line"><span>Расход (оценка)</span><strong id="kcal-burned">0</strong></div>
+            <div class="goal-line"><span>Учтено в бюджете</span><strong id="kcal-credited">0</strong></div>
+            <div class="goal-line"><span>Осталось</span><strong id="kcal-left">2200</strong></div>
           </div>
         </section>
 
-        <section class="macro-grid">
-          <article class="macro-card card">
-            <div class="macro-title">Белки</div>
-            <div class="macro-value"><strong id="protein-total">0</strong> / <span id="protein-goal">160</span> г</div>
-            <div class="progress"><div id="protein-progress"></div></div>
-          </article>
-          <article class="macro-card card">
-            <div class="macro-title">Жиры</div>
-            <div class="macro-value"><strong id="fat-total">0</strong> / <span id="fat-goal">75</span> г</div>
-            <div class="progress"><div id="fat-progress"></div></div>
-          </article>
-          <article class="macro-card card">
-            <div class="macro-title">Углеводы</div>
-            <div class="macro-value"><strong id="carb-total">0</strong> / <span id="carb-goal">230</span> г</div>
-            <div class="progress"><div id="carb-progress"></div></div>
-          </article>
+        <section class="macro-grid" aria-label="Макронутриенты">
+          <article class="macro-card card"><div class="macro-title">Белки</div><div class="macro-value"><strong id="protein-total">0</strong> / <span id="protein-goal">160</span> г</div><div class="progress"><div id="protein-progress"></div></div></article>
+          <article class="macro-card card"><div class="macro-title">Жиры</div><div class="macro-value"><strong id="fat-total">0</strong> / <span id="fat-goal">75</span> г</div><div class="progress"><div id="fat-progress"></div></div></article>
+          <article class="macro-card card"><div class="macro-title">Углеводы</div><div class="macro-value"><strong id="carb-total">0</strong> / <span id="carb-goal">230</span> г</div><div class="progress"><div id="carb-progress"></div></div></article>
         </section>
+
+        <section class="card recovery-compact"><div><div class="eyebrow">Восстановление</div><strong id="today-sleep">Сон не записан</strong><small id="today-readiness">Добавьте самочувствие</small></div><button id="log-recovery" class="activity-add" type="button">Записать</button></section>
 
         <section class="activity-card card">
-          <div class="activity-header">
-            <div>
-              <div class="eyebrow">Расход за день</div>
-              <h3>Активность</h3>
-            </div>
-            <strong><span id="activity-kcal-total">0</span> ккал</strong>
-          </div>
-          <div class="walking-row">
-            <div>
-              <strong>Ходьба</strong>
-              <small><span id="walking-steps-total">0</span> шагов · <span id="walking-distance-total">0</span> км · <span id="walking-kcal-total">0</span> ккал</small>
-            </div>
-            <button id="edit-walking" class="activity-add" type="button">Записать</button>
-          </div>
+          <div class="activity-header"><div><div class="eyebrow">Расход за день</div><h3>Активность</h3></div><strong><span id="activity-kcal-total">0</span> ккал</strong></div>
+          <div class="walking-row"><div><strong>Ходьба</strong><small><span id="walking-steps-total">0</span> шагов · <span id="walking-distance-total">0</span> км · ≈ <span id="walking-kcal-total">0</span> ккал</small></div><button id="edit-walking" class="activity-add" type="button">Записать</button></div>
           <div id="activity-list" class="activity-list"></div>
-          <button id="add-workout" class="secondary activity-button" type="button">+ Добавить тренировку</button>
-          <p class="muted tiny activity-note">Расход калорий является оценкой и зависит от массы тела, темпа и техники выполнения.</p>
+          <div class="button-row"><button id="add-workout" class="secondary" type="button">+ Тренировка</button><button id="apply-workout-template" class="secondary" type="button">Шаблон</button></div>
+          <p class="muted tiny activity-note">Расход калорий является приблизительной оценкой. Настройте его влияние на бюджет в параметрах.</p>
         </section>
 
         <div id="meals"></div>
-
-        <button id="add-entry" class="fab">+ Добавить еду</button>
+        <button id="add-entry" class="fab" type="button">+ Добавить еду</button>
       </section>
 
-      <section id="products-view" class="view">
-        <div class="section-heading">
-          <div>
-            <div class="eyebrow">Локальная база</div>
-            <h2>Продукты</h2>
-          </div>
-          <button id="add-product" class="primary-small">+ Новый</button>
-        </div>
-        <div class="search-wrap card">
-          <input id="product-search" type="search" placeholder="Найти продукт" autocomplete="off" />
-        </div>
+      <section id="progress-view" class="view" aria-labelledby="progress-title">
+        <div class="section-heading"><div><div class="eyebrow">История и тенденции</div><h2 id="progress-title">Прогресс</h2></div><div class="range-switch"><button class="range-button active" data-days="7" type="button">7 дней</button><button class="range-button" data-days="30" type="button">30</button></div></div>
+        <section class="metric-grid" id="progress-metrics"></section>
+        <section class="card chart-card"><div class="card-title-row"><h3>Калории</h3><span class="muted tiny">съедено / цель</span></div><div id="calorie-chart" class="bar-chart"></div></section>
+        <section class="card chart-card"><div class="card-title-row"><h3>Сон</h3><span class="muted tiny">часы</span></div><div id="sleep-chart" class="bar-chart sleep-chart"></div><p id="recovery-insight" class="muted insight"></p></section>
+        <section class="card settings-card"><div class="card-title-row"><h3>Вес</h3><strong id="weight-trend"></strong></div><div id="weight-history" class="history-list"></div></section>
+        <button id="progress-log-recovery" class="primary" type="button">Записать сон, вес и самочувствие</button>
+      </section>
+
+      <section id="products-view" class="view" aria-labelledby="products-title">
+        <div class="section-heading"><div><div class="eyebrow">Локальная база</div><h2 id="products-title">Продукты</h2></div><button id="add-product" class="primary-small" type="button">+ Новый</button></div>
+        <div class="search-wrap card"><input id="product-search" type="search" placeholder="Найти продукт" autocomplete="off" /></div>
+        <div class="product-filter-row"><button class="filter-chip active" data-product-filter="all" type="button">Все</button><button class="filter-chip" data-product-filter="favorites" type="button">★ Избранное</button></div>
         <div id="products-list" class="list-stack"></div>
+        <section class="saved-section"><div class="section-heading compact"><div><div class="eyebrow">Быстрый повтор</div><h3>Сохранённые блюда</h3></div></div><div id="saved-meals-list" class="list-stack"></div></section>
       </section>
 
-      <section id="settings-view" class="view">
-        <div class="section-heading">
-          <div>
-            <div class="eyebrow">Параметры</div>
-            <h2>Настройки</h2>
-          </div>
-        </div>
-
-        <form id="goals-form" class="card settings-card">
-          <h3>Дневная цель</h3>
-          <div class="field-grid">
-            <label>Калории<input id="goal-kcal" type="number" min="0" step="1" inputmode="numeric" /></label>
-            <label>Белки, г<input id="goal-protein" type="number" min="0" step="1" inputmode="decimal" /></label>
-            <label>Жиры, г<input id="goal-fat" type="number" min="0" step="1" inputmode="decimal" /></label>
-            <label>Углеводы, г<input id="goal-carb" type="number" min="0" step="1" inputmode="decimal" /></label>
-          </div>
-          <button class="primary" type="submit">Сохранить цели</button>
-        </form>
-
-        <form id="profile-form" class="card settings-card">
-          <h3>Данные для расчёта активности</h3>
-          <div class="field-grid">
-            <label>Масса тела, кг<input id="profile-weight" type="number" min="25" max="350" step="0.1" inputmode="decimal" required /></label>
-            <label>Длина шага, см<input id="profile-stride" type="number" min="30" max="150" step="1" inputmode="decimal" required /></label>
-          </div>
-          <p class="muted tiny">Масса нужна для оценки расхода, длина шага — для перевода шагов в километры.</p>
-          <button class="primary" type="submit">Сохранить параметры</button>
-        </form>
-
-        <section class="card settings-card">
-          <h3>Резервная копия</h3>
-          <p class="muted">Данные хранятся только на этом устройстве. Экспорт пригодится перед очисткой Safari или сменой телефона.</p>
-          <div class="button-stack">
-            <button id="export-data" class="secondary" type="button">Экспортировать JSON</button>
-            <label class="secondary file-button">Импортировать JSON<input id="import-data" type="file" accept="application/json" hidden /></label>
-          </div>
-        </section>
-
-        <section class="card settings-card install-card">
-          <h3>Установка на iPhone</h3>
-          <p class="muted">Откройте эту страницу в Safari → «Поделиться» → «На экран “Домой”». После этого БЖУ запускается отдельным приложением и работает офлайн.</p>
-        </section>
+      <section id="settings-view" class="view" aria-labelledby="settings-title">
+        <div class="section-heading"><div><div class="eyebrow">Параметры</div><h2 id="settings-title">Настройки</h2></div></div>
+        <form id="goals-form" class="card settings-card"><h3>Дневная цель</h3><div class="field-grid"><label>Калории<input id="goal-kcal" type="number" min="0" max="20000" step="1" /></label><label>Цель<select id="goal-mode"><option value="lose">Снижение веса</option><option value="maintain">Поддержание</option><option value="gain">Набор массы</option></select></label><label>Белки, г<input id="goal-protein" type="number" min="0" step="1" /></label><label>Жиры, г<input id="goal-fat" type="number" min="0" step="1" /></label><label>Углеводы, г<input id="goal-carb" type="number" min="0" step="1" /></label><label>Учитывать расход<select id="activity-credit"><option value="0">Не учитывать</option><option value="0.5">На 50%</option><option value="1">Полностью</option></select></label></div><button class="primary" type="submit">Сохранить цели</button></form>
+        <form id="profile-form" class="card settings-card"><h3>Профиль и ориентир</h3><div class="field-grid"><label>Масса, кг<input id="profile-weight" type="number" min="25" max="350" step="0.1" required /></label><label>Рост, см<input id="profile-height" type="number" min="100" max="250" step="1" required /></label><label>Возраст<input id="profile-age" type="number" min="14" max="100" step="1" required /></label><label>Пол<select id="profile-sex"><option value="male">Мужской</option><option value="female">Женский</option></select></label><label>Активность<select id="profile-activity"><option value="1.2">Низкая</option><option value="1.375">Лёгкая</option><option value="1.55">Средняя</option><option value="1.725">Высокая</option><option value="1.9">Очень высокая</option></select></label><label>Длина шага, см<input id="profile-stride" type="number" min="30" max="150" step="1" required /></label></div><div id="goal-suggestion" class="preview card-inset"></div><div class="button-row"><button id="calculate-goal" class="secondary" type="button">Рассчитать ориентир</button><button class="primary" type="submit">Сохранить</button></div><p class="muted tiny">Расчёт — стартовый ориентир, а не медицинская рекомендация. Корректируйте цель по динамике веса и самочувствию.</p></form>
+        <section class="card settings-card"><h3>Резервная копия</h3><p id="backup-status" class="muted"></p><div class="button-stack"><button id="export-data" class="secondary" type="button">Экспортировать JSON</button><label class="secondary file-button">Импортировать JSON<input id="import-data" type="file" accept="application/json" hidden /></label></div></section>
+        <section class="card settings-card install-card"><h3>Установка на iPhone</h3><p class="muted">Safari → «Поделиться» → «На экран Домой». Приложение работает офлайн; обновления устанавливаются автоматически после загрузки.</p></section>
       </section>
     </main>
 
-    <nav class="tabbar" aria-label="Навигация">
-      <button class="tab active" data-view="today-view"><span>◉</span><small>Сегодня</small></button>
-      <button class="tab" data-view="products-view"><span>▦</span><small>Продукты</small></button>
-      <button class="tab" data-view="settings-view"><span>⚙</span><small>Настройки</small></button>
-    </nav>
+    <nav class="tabbar" aria-label="Навигация"><button class="tab active" data-view="today-view" type="button" aria-current="page"><span>◉</span><small>Сегодня</small></button><button class="tab" data-view="progress-view" type="button"><span>↗</span><small>Прогресс</small></button><button class="tab" data-view="products-view" type="button"><span>▦</span><small>Продукты</small></button><button class="tab" data-view="settings-view" type="button"><span>⚙</span><small>Настройки</small></button></nav>
   </div>
 
-  <dialog id="entry-dialog" class="sheet">
-    <form method="dialog" id="entry-form" class="sheet-body">
-      <div class="sheet-handle"></div>
-      <div class="sheet-title-row">
-        <h2>Добавить еду</h2>
-        <button type="button" class="close-button" data-close="entry-dialog">×</button>
-      </div>
-      <label>Приём пищи
-        <select id="entry-meal">
-          <option value="breakfast">Завтрак</option>
-          <option value="lunch">Обед</option>
-          <option value="dinner">Ужин</option>
-          <option value="snack">Перекус</option>
-        </select>
-      </label>
-      <label>Продукт
-        <select id="entry-product"></select>
-      </label>
-      <label>Количество, г
-        <input id="entry-grams" type="number" min="0.1" step="0.1" inputmode="decimal" value="100" required />
-      </label>
-      <div id="entry-preview" class="preview card-inset"></div>
-      <button type="submit" class="primary">Добавить</button>
-    </form>
-  </dialog>
+  <dialog id="entry-dialog" class="sheet" aria-labelledby="entry-title"><form method="dialog" id="entry-form" class="sheet-body"><div class="sheet-handle"></div><div class="sheet-title-row"><h2 id="entry-title">Добавить еду</h2><button type="button" class="close-button" data-close="entry-dialog" aria-label="Закрыть">×</button></div><input id="entry-edit-id" type="hidden" /><label>Приём пищи<select id="entry-meal"><option value="breakfast">Завтрак</option><option value="lunch">Обед</option><option value="dinner">Ужин</option><option value="snack">Перекус</option></select></label><label>Найти продукт<input id="entry-product-search" type="search" placeholder="Начните вводить название" autocomplete="off" /></label><div id="entry-product-results" class="picker-list"></div><input id="entry-product-id" type="hidden" /><div class="field-grid"><label>Количество<input id="entry-amount" type="number" min="0.1" step="0.1" value="100" required /></label><label>Единица<select id="entry-unit"><option value="grams">граммы</option><option value="serving">порции</option></select></label></div><div id="entry-preview" class="preview card-inset"></div><button type="submit" class="primary">Сохранить</button></form></dialog>
 
-  <dialog id="workout-dialog" class="sheet">
-    <form method="dialog" id="workout-form" class="sheet-body">
-      <div class="sheet-handle"></div>
-      <div class="sheet-title-row">
-        <h2>Добавить тренировку</h2>
-        <button type="button" class="close-button" data-close="workout-dialog">×</button>
-      </div>
-      <label>Упражнение
-        <select id="workout-exercise"></select>
-      </label>
+  <dialog id="workout-dialog" class="sheet" aria-labelledby="workout-title"><form method="dialog" id="workout-form" class="sheet-body"><div class="sheet-handle"></div><div class="sheet-title-row"><h2 id="workout-title">Добавить тренировку</h2><button type="button" class="close-button" data-close="workout-dialog" aria-label="Закрыть">×</button></div><input id="workout-edit-id" type="hidden" /><label>Упражнение<select id="workout-exercise"></select></label><div id="strength-fields" class="conditional-fields"><div class="interval-heading"><strong>Подходы</strong><button id="add-strength-set" class="activity-add" type="button">+ Подход</button></div><div id="strength-sets"></div><label>Отдых между подходами, сек<input id="workout-rest" type="number" min="0" max="900" step="5" value="60" /></label><p id="previous-performance" class="muted tiny"></p></div><div id="cardio-fields" class="conditional-fields hidden"><div class="field-grid"><label>Время, мин<input id="workout-duration" type="number" min="0" max="1440" step="0.5" value="30" /></label><label>Дистанция, км<input id="workout-distance" type="number" min="0" max="1000" step="0.01" /></label><label id="speed-label">Скорость, км/ч<input id="workout-speed" type="number" min="0" max="100" step="0.1" /></label><label>Интенсивность<select id="workout-intensity"><option value="light">Лёгкая</option><option value="moderate" selected>Средняя</option><option value="hard">Высокая</option></select></label></div><div id="running-interval-section" class="interval-section hidden"><div class="interval-heading"><strong>Интервалы бега</strong><button id="add-running-interval" class="activity-add" type="button">+ Отрезок</button></div><div id="running-intervals"></div></div></div><div id="workout-preview" class="preview card-inset"></div><label class="check-label"><input id="save-workout-template" type="checkbox" /> Сохранить как шаблон тренировки</label><button type="submit" class="primary">Сохранить тренировку</button></form></dialog>
 
-      <div id="strength-fields" class="conditional-fields">
-        <div class="field-grid">
-          <label>Подходы<input id="workout-sets" type="number" min="1" max="100" step="1" inputmode="numeric" value="4" /></label>
-          <label>Повторений в подходе<input id="workout-reps" type="number" min="1" max="500" step="1" inputmode="numeric" value="10" /></label>
-          <label>Рабочий вес, кг<input id="workout-weight" type="number" min="0" max="1000" step="0.5" inputmode="decimal" value="10" /></label>
-          <label>Отдых между подходами, сек<input id="workout-rest" type="number" min="0" max="900" step="5" inputmode="numeric" value="60" /></label>
-        </div>
-      </div>
+  <dialog id="walking-dialog" class="sheet" aria-labelledby="walking-title"><form method="dialog" id="walking-form" class="sheet-body"><div class="sheet-handle"></div><div class="sheet-title-row"><h2 id="walking-title">Ходьба за день</h2><button type="button" class="close-button" data-close="walking-dialog" aria-label="Закрыть">×</button></div><label>Количество шагов<input id="walking-steps" type="number" min="0" max="500000" step="1" value="0" /></label><label>Фактическая дистанция, км (необязательно)<input id="walking-distance" type="number" min="0" max="500" step="0.01" /></label><div id="walking-preview" class="preview card-inset"></div><button type="submit" class="primary">Сохранить ходьбу</button></form></dialog>
 
-      <div id="cardio-fields" class="conditional-fields hidden">
-        <div class="field-grid">
-          <label>Время, мин<input id="workout-duration" type="number" min="0" max="1440" step="0.5" inputmode="decimal" value="30" /></label>
-          <label>Дистанция, км<input id="workout-distance" type="number" min="0" max="1000" step="0.01" inputmode="decimal" /></label>
-          <label id="speed-label">Средняя скорость, км/ч<input id="workout-speed" type="number" min="0" max="100" step="0.1" inputmode="decimal" /></label>
-          <label>Интенсивность
-            <select id="workout-intensity">
-              <option value="light">Лёгкая</option>
-              <option value="moderate" selected>Средняя</option>
-              <option value="hard">Высокая</option>
-            </select>
-          </label>
-        </div>
-        <div id="running-interval-section" class="interval-section hidden">
-          <div class="interval-heading">
-            <strong>Интервалы бега</strong>
-            <button id="add-running-interval" class="activity-add" type="button">+ Отрезок</button>
-          </div>
-          <p class="muted tiny">Если добавлены интервалы, расход и дистанция считаются по ним, а общие поля выше не используются.</p>
-          <div id="running-intervals"></div>
-        </div>
-      </div>
+  <dialog id="product-dialog" class="sheet" aria-labelledby="product-title"><form method="dialog" id="product-form" class="sheet-body"><div class="sheet-handle"></div><div class="sheet-title-row"><h2 id="product-title">Новый продукт</h2><button type="button" class="close-button" data-close="product-dialog" aria-label="Закрыть">×</button></div><input id="product-edit-id" type="hidden" /><label>Название<input id="product-name" type="text" maxlength="80" required /></label><div class="field-grid"><label>Белки / 100 г<input id="product-protein" type="number" min="0" step="0.1" required /></label><label>Жиры / 100 г<input id="product-fat" type="number" min="0" step="0.1" required /></label><label>Углеводы / 100 г<input id="product-carb" type="number" min="0" step="0.1" required /></label><label>Ккал / 100 г<input id="product-kcal" type="number" min="0" step="1" placeholder="Рассчитать" /></label><label>Название порции<input id="product-serving-name" type="text" maxlength="30" placeholder="порция, штука" /></label><label>Вес порции, г<input id="product-serving-grams" type="number" min="0.1" step="0.1" value="100" /></label></div><button type="submit" class="primary">Сохранить продукт</button></form></dialog>
 
-      <div id="workout-preview" class="preview card-inset"></div>
-      <button type="submit" class="primary">Добавить тренировку</button>
-    </form>
-  </dialog>
+  <dialog id="recovery-dialog" class="sheet" aria-labelledby="recovery-title"><form method="dialog" id="recovery-form" class="sheet-body"><div class="sheet-handle"></div><div class="sheet-title-row"><h2 id="recovery-title">Восстановление</h2><button type="button" class="close-button" data-close="recovery-dialog" aria-label="Закрыть">×</button></div><label>Дата<input id="recovery-date" type="date" required /></label><div class="field-grid"><label>Сон, часов<input id="recovery-sleep" type="number" min="0" max="24" step="0.1" /></label><label>Качество сна, 1–5<input id="recovery-quality" type="number" min="1" max="5" step="1" /></label><label>Усталость, 1–5<input id="recovery-fatigue" type="number" min="1" max="5" step="1" /></label><label>Готовность, 1–5<input id="recovery-readiness" type="number" min="1" max="5" step="1" /></label><label>Вес, кг<input id="recovery-weight" type="number" min="25" max="350" step="0.1" /></label></div><button type="submit" class="primary">Сохранить</button></form></dialog>
 
-  <dialog id="walking-dialog" class="sheet">
-    <form method="dialog" id="walking-form" class="sheet-body">
-      <div class="sheet-handle"></div>
-      <div class="sheet-title-row">
-        <h2>Ходьба за день</h2>
-        <button type="button" class="close-button" data-close="walking-dialog">×</button>
-      </div>
-      <label>Количество шагов<input id="walking-steps" type="number" min="0" max="500000" step="1" inputmode="numeric" value="0" /></label>
-      <label>Фактическая дистанция, км (необязательно)<input id="walking-distance" type="number" min="0" max="500" step="0.01" inputmode="decimal" /></label>
-      <p class="muted tiny">Если дистанция не указана, она рассчитывается из количества шагов и длины шага.</p>
-      <div id="walking-preview" class="preview card-inset"></div>
-      <button type="submit" class="primary">Сохранить ходьбу</button>
-    </form>
-  </dialog>
+  <dialog id="template-dialog" class="sheet" aria-labelledby="template-title"><div class="sheet-body"><div class="sheet-handle"></div><div class="sheet-title-row"><h2 id="template-title">Шаблоны тренировок</h2><button type="button" class="close-button" data-close="template-dialog" aria-label="Закрыть">×</button></div><button id="save-day-template" class="secondary" type="button">Сохранить тренировки этого дня</button><div id="template-list" class="list-stack"></div></div></dialog>
+  <dialog id="help-dialog" class="sheet" aria-labelledby="help-title"><div class="sheet-body"><div class="sheet-handle"></div><div class="sheet-title-row"><h2 id="help-title">БЖУ+</h2><button type="button" class="close-button" data-close="help-dialog" aria-label="Закрыть">×</button></div><ol class="steps"><li>Добавляйте продукты, блюда и тренировки за выбранный день.</li><li>Записывайте сон и вес — тенденции появятся на экране «Прогресс».</li><li>Регулярно экспортируйте копию: данные хранятся на устройстве.</li><li>Для установки: Safari → Поделиться → На экран «Домой».</li></ol></div></dialog>
 
-  <dialog id="product-dialog" class="sheet">
-    <form method="dialog" id="product-form" class="sheet-body">
-      <div class="sheet-handle"></div>
-      <div class="sheet-title-row">
-        <h2>Новый продукт</h2>
-        <button type="button" class="close-button" data-close="product-dialog">×</button>
-      </div>
-      <input id="product-edit-id" type="hidden" />
-      <label>Название<input id="product-name" type="text" maxlength="80" required /></label>
-      <div class="field-grid">
-        <label>Белки / 100 г<input id="product-protein" type="number" min="0" step="0.1" inputmode="decimal" required /></label>
-        <label>Жиры / 100 г<input id="product-fat" type="number" min="0" step="0.1" inputmode="decimal" required /></label>
-        <label>Углеводы / 100 г<input id="product-carb" type="number" min="0" step="0.1" inputmode="decimal" required /></label>
-        <label>Ккал / 100 г<input id="product-kcal" type="number" min="0" step="1" inputmode="decimal" /></label>
-      </div>
-      <p class="muted tiny">Если ккал оставить пустыми, они посчитаются по формуле 4×Б + 9×Ж + 4×У.</p>
-      <button type="submit" class="primary">Сохранить продукт</button>
-    </form>
-  </dialog>
-
-  <dialog id="help-dialog" class="sheet">
-    <div class="sheet-body">
-      <div class="sheet-handle"></div>
-      <div class="sheet-title-row">
-        <h2>Как установить бесплатно</h2>
-        <button type="button" class="close-button" data-close="help-dialog">×</button>
-      </div>
-      <ol class="steps">
-        <li>Откройте адрес приложения именно в Safari на iPhone.</li>
-        <li>Нажмите кнопку «Поделиться».</li>
-        <li>Выберите «На экран “Домой”».</li>
-        <li>Подтвердите добавление. Появится отдельная иконка «БЖУ».</li>
-      </ol>
-      <p class="muted">Никаких сертификатов Apple и ежегодной оплаты для этого варианта не требуется.</p>
-    </div>
-  </dialog>
-
-  <div id="toast" class="toast" role="status"></div>
+  <div id="rest-timer" class="rest-timer hidden" role="timer"><span>Отдых</span><strong id="rest-timer-value">0:00</strong><button id="cancel-rest-timer" type="button">×</button></div>
+  <div id="toast" class="toast" role="status" aria-live="polite"><span id="toast-message"></span><button id="toast-action" class="toast-action" type="button" hidden></button></div>
+  <script src="core.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

@@ -1,10 +1,14 @@
 {
-  "name": "БЖУ — питание и активность",
+  "id": "./",
+  "name": "БЖУ+ — питание, активность и восстановление",
   "short_name": "БЖУ+",
+  "description": "Локальный дневник питания, тренировок, сна и прогресса.",
   "lang": "ru",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "categories": ["health", "fitness", "lifestyle"],
   "background_color": "#f5f5f7",
   "theme_color": "#f5f5f7",
   "icons": [

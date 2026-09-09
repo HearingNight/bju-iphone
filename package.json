@@ -1,0 +1,9 @@
+{
+  "name": "bju-iphone-pwa",
+  "private": true,
+  "version": "4.0.0",
+  "scripts": {
+    "test": "node tests/core.test.js && node tests/smoke.test.js",
+    "check": "node --check core.js && node --check app.js && node --check sw.js"
+  }
+}

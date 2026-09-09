@@ -1,764 +1,190 @@
+'use strict';
+
+const Core = window.BJUCore;
 const STORAGE_KEY = 'bju-tracker-v1';
-const PRODUCT_CATALOG_VERSION = 3;
-const MEALS = [
-  ['breakfast', 'Завтрак'],
-  ['lunch', 'Обед'],
-  ['dinner', 'Ужин'],
-  ['snack', 'Перекус']
-];
+const PRE_IMPORT_KEY = 'bju-tracker-pre-import';
+const MEALS = [['breakfast', 'Завтрак'], ['lunch', 'Обед'], ['dinner', 'Ужин'], ['snack', 'Перекус']];
 
 const DEFAULT_PRODUCTS = [
-  ['chicken', 'Куриная грудка, готовая', 31, 3.6, 0, 165],
-  ['chicken-thigh', 'Куриное бедро без кожи, готовое', 26, 10.9, 0, 209],
-  ['turkey', 'Филе индейки, готовое', 29, 1.8, 0, 135],
-  ['beef', 'Говядина постная, готовая', 26, 10, 0, 198],
-  ['pork', 'Свинина постная, готовая', 27, 9, 0, 195],
-  ['egg', 'Яйцо куриное', 12.6, 10.6, 1.1, 143],
-  ['egg-white', 'Белок яичный', 10.9, 0.2, 0.7, 52],
-  ['salmon', 'Лосось, готовый', 25.4, 13.4, 0, 208],
-  ['tuna', 'Тунец в собственном соку', 25.5, 1, 0, 116],
-  ['cod', 'Треска, готовая', 23, 0.9, 0, 105],
-  ['shrimp', 'Креветки, готовые', 24, 0.3, 0.2, 99],
-  ['cottage0', 'Творог 0–2%', 18, 1.8, 3.3, 101],
-  ['cottage5', 'Творог 5%', 17.2, 5, 1.8, 121],
-  ['greek-yogurt', 'Йогурт греческий 2%', 9.9, 2, 3.9, 73],
-  ['yogurt-natural', 'Йогурт натуральный 3,2%', 5, 3.2, 4.5, 66],
-  ['milk15', 'Молоко 1,5%', 3, 1.5, 4.8, 44],
-  ['milk25', 'Молоко 2,5%', 2.8, 2.5, 4.7, 52],
-  ['kefir1', 'Кефир 1%', 3, 1, 4, 40],
-  ['cheese', 'Сыр твёрдый', 24, 30, 1, 370],
-  ['mozzarella', 'Моцарелла', 22, 22, 2, 300],
-  ['whey', 'Протеин сывороточный, порошок', 75, 7, 10, 400],
-  ['rice', 'Рис белый, варёный', 2.7, 0.3, 28.2, 130],
-  ['brown-rice', 'Рис бурый, варёный', 2.6, 0.9, 23, 112],
-  ['buckwheat', 'Гречка, варёная', 3.6, 1.1, 20, 110],
-  ['oats', 'Овсяные хлопья, сухие', 13.2, 6.5, 57.5, 352],
-  ['pasta', 'Макароны, варёные', 5.8, 0.9, 30.9, 158],
-  ['quinoa', 'Киноа, варёная', 4.4, 1.9, 21.3, 120],
-  ['bulgur', 'Булгур, варёный', 3.1, 0.2, 18.6, 83],
-  ['couscous', 'Кускус, варёный', 3.8, 0.2, 23.2, 112],
-  ['lentils', 'Чечевица, варёная', 9, 0.4, 20, 116],
-  ['chickpeas', 'Нут, варёный', 8.9, 2.6, 27.4, 164],
-  ['beans', 'Фасоль красная, варёная', 8.7, 0.5, 22.8, 127],
-  ['bread', 'Хлеб цельнозерновой', 12.5, 4.2, 43.3, 247],
-  ['rye-bread', 'Хлеб ржаной', 6.6, 1.2, 33.4, 174],
-  ['lavash', 'Лаваш тонкий', 8.1, 0.7, 57.1, 277],
-  ['potato', 'Картофель, варёный', 1.9, 0.1, 20.1, 87],
-  ['sweet-potato', 'Батат, готовый', 1.6, 0.1, 20.7, 90],
-  ['broccoli', 'Брокколи', 2.8, 0.4, 6.6, 34],
-  ['cauliflower', 'Цветная капуста', 1.9, 0.3, 5, 25],
-  ['cucumber', 'Огурец', 0.7, 0.1, 3.6, 15],
-  ['tomato', 'Помидор', 0.9, 0.2, 3.9, 18],
-  ['cabbage', 'Капуста белокочанная', 1.3, 0.1, 5.8, 25],
-  ['carrot', 'Морковь', 0.9, 0.2, 9.6, 41],
-  ['pepper', 'Перец сладкий', 1, 0.3, 6, 31],
-  ['avocado', 'Авокадо', 2, 14.7, 8.5, 160],
-  ['banana', 'Банан', 1.1, 0.3, 22.8, 89],
-  ['apple', 'Яблоко', 0.3, 0.2, 13.8, 52],
-  ['orange', 'Апельсин', 0.9, 0.1, 11.8, 47],
-  ['pear', 'Груша', 0.4, 0.1, 15.2, 57],
-  ['berries', 'Ягоды, смесь', 1, 0.5, 10, 50],
-  ['grapes', 'Виноград', 0.7, 0.2, 18.1, 69],
-  ['almonds', 'Миндаль', 21.2, 49.9, 21.6, 579],
-  ['walnuts', 'Грецкие орехи', 15.2, 65.2, 13.7, 654],
-  ['peanut-butter', 'Арахисовая паста', 25, 50, 20, 588],
-  ['olive-oil', 'Оливковое масло', 0, 100, 0, 900],
-  ['sunflower-oil', 'Подсолнечное масло', 0, 100, 0, 900],
-  ['butter', 'Масло сливочное 82%', 0.5, 82, 0.8, 748],
-  ['dark-chocolate', 'Шоколад тёмный 70%', 7.8, 42.6, 45.9, 598],
-  ['honey', 'Мёд', 0.3, 0, 82.4, 304],
-  ['sugar', 'Сахар', 0, 0, 100, 400]
-].map(([id, name, p, f, c, kcal]) => ({ id, name, p, f, c, kcal, builtIn: true }));
+  ['chicken','Куриная грудка, готовая',31,3.6,0,165],['chicken-thigh','Куриное бедро без кожи, готовое',26,10.9,0,209],['turkey','Филе индейки, готовое',29,1.8,0,135],
+  ['beef','Говядина постная, готовая',26,10,0,198],['pork','Свинина постная, готовая',27,9,0,195],['egg','Яйцо куриное',12.6,10.6,1.1,143,'штука',55],
+  ['egg-white','Белок яичный',10.9,.2,.7,52],['salmon','Лосось, готовый',25.4,13.4,0,208],['tuna','Тунец в собственном соку',25.5,1,0,116],
+  ['cod','Треска, готовая',23,.9,0,105],['shrimp','Креветки, готовые',24,.3,.2,99],['cottage0','Творог 0–2%',18,1.8,3.3,101],
+  ['cottage5','Творог 5%',17.2,5,1.8,121],['greek-yogurt','Йогурт греческий 2%',9.9,2,3.9,73],['yogurt-natural','Йогурт натуральный 3,2%',5,3.2,4.5,66],
+  ['milk15','Молоко 1,5%',3,1.5,4.8,44,'стакан',250],['milk25','Молоко 2,5%',2.8,2.5,4.7,52,'стакан',250],['kefir1','Кефир 1%',3,1,4,40,'стакан',250],
+  ['cheese','Сыр твёрдый',24,30,1,370],['mozzarella','Моцарелла',22,22,2,300],['whey','Протеин сывороточный, порошок',75,7,10,400,'мерная ложка',30],
+  ['rice','Рис белый, варёный',2.7,.3,28.2,130],['brown-rice','Рис бурый, варёный',2.6,.9,23,112],['buckwheat','Гречка, варёная',3.6,1.1,20,110],
+  ['oats','Овсяные хлопья, сухие',13.2,6.5,57.5,352],['pasta','Макароны, варёные',5.8,.9,30.9,158],['quinoa','Киноа, варёная',4.4,1.9,21.3,120],
+  ['bulgur','Булгур, варёный',3.1,.2,18.6,83],['couscous','Кускус, варёный',3.8,.2,23.2,112],['lentils','Чечевица, варёная',9,.4,20,116],
+  ['chickpeas','Нут, варёный',8.9,2.6,27.4,164],['beans','Фасоль красная, варёная',8.7,.5,22.8,127],['bread','Хлеб цельнозерновой',12.5,4.2,43.3,247,'ломтик',35],
+  ['rye-bread','Хлеб ржаной',6.6,1.2,33.4,174,'ломтик',35],['lavash','Лаваш тонкий',8.1,.7,57.1,277],['potato','Картофель, варёный',1.9,.1,20.1,87],
+  ['sweet-potato','Батат, готовый',1.6,.1,20.7,90],['broccoli','Брокколи',2.8,.4,6.6,34],['cauliflower','Цветная капуста',1.9,.3,5,25],
+  ['cucumber','Огурец',.7,.1,3.6,15],['tomato','Помидор',.9,.2,3.9,18],['cabbage','Капуста белокочанная',1.3,.1,5.8,25],
+  ['carrot','Морковь',.9,.2,9.6,41],['pepper','Перец сладкий',1,.3,6,31],['avocado','Авокадо',2,14.7,8.5,160],
+  ['banana','Банан',1.1,.3,22.8,89,'штука',120],['apple','Яблоко',.3,.2,13.8,52,'штука',180],['orange','Апельсин',.9,.1,11.8,47,'штука',160],
+  ['pear','Груша',.4,.1,15.2,57,'штука',180],['berries','Ягоды, смесь',1,.5,10,50],['grapes','Виноград',.7,.2,18.1,69],
+  ['almonds','Миндаль',21.2,49.9,21.6,579],['walnuts','Грецкие орехи',15.2,65.2,13.7,654],['peanut-butter','Арахисовая паста',25,50,20,588,'ложка',20],
+  ['olive-oil','Оливковое масло',0,100,0,900,'ложка',14],['sunflower-oil','Подсолнечное масло',0,100,0,900,'ложка',14],['butter','Масло сливочное 82%',.5,82,.8,748],
+  ['dark-chocolate','Шоколад тёмный 70%',7.8,42.6,45.9,598],['honey','Мёд',.3,0,82.4,304,'ложка',20],['sugar','Сахар',0,0,100,400,'ложка',12]
+].map(([id,name,p,f,c,kcal,servingName='порция',servingGrams=100]) => ({ id,name,p,f,c,kcal,servingName,servingGrams,builtIn:true }));
 
 const EXERCISES = [
-  { id: 'dumbbell-curl', name: 'Подъём гантелей на бицепс', type: 'strength', met: 5.5, secondsPerRep: 4, loadFactor: 1.2 },
-  { id: 'barbell-curl', name: 'Подъём штанги на бицепс', type: 'strength', met: 5.7, secondsPerRep: 4, loadFactor: 1.1 },
-  { id: 'incline-dumbbell-curl', name: 'Сгибание рук с гантелями на наклонной скамье', type: 'strength', met: 5.5, secondsPerRep: 4.5, loadFactor: 1.25 },
-  { id: 'hyperextension', name: 'Гиперэкстензия', type: 'strength', met: 5.2, secondsPerRep: 4, loadFactor: 0.8 },
-  { id: 'pec-deck', name: 'Бабочка — сведение рук', type: 'strength', met: 5.3, secondsPerRep: 4, loadFactor: 0.9 },
-  { id: 'reverse-pec-deck', name: 'Обратная бабочка — разведение рук', type: 'strength', met: 5.3, secondsPerRep: 4, loadFactor: 0.9 },
-  { id: 'bent-over-row', name: 'Тяга штанги в наклоне', type: 'strength', met: 6.1, secondsPerRep: 4, loadFactor: 0.85 },
-  { id: 'bench-press', name: 'Жим штанги лёжа', type: 'strength', met: 6, secondsPerRep: 4, loadFactor: 0.8 },
-  { id: 'incline-bench-press', name: 'Жим на наклонной скамье', type: 'strength', met: 6, secondsPerRep: 4, loadFactor: 0.85 },
-  { id: 'dumbbell-bench-press', name: 'Жим гантелей лёжа', type: 'strength', met: 5.8, secondsPerRep: 4, loadFactor: 1 },
-  { id: 'shoulder-press', name: 'Жим гантелей над головой', type: 'strength', met: 5.8, secondsPerRep: 4, loadFactor: 1 },
-  { id: 'lateral-raise', name: 'Разведение гантелей в стороны', type: 'strength', met: 5.2, secondsPerRep: 4, loadFactor: 1.3 },
-  { id: 'lat-pulldown', name: 'Тяга верхнего блока', type: 'strength', met: 5.8, secondsPerRep: 4, loadFactor: 0.85 },
-  { id: 'seated-row', name: 'Тяга горизонтального блока', type: 'strength', met: 5.8, secondsPerRep: 4, loadFactor: 0.85 },
-  { id: 'deadlift', name: 'Становая тяга', type: 'strength', met: 6.5, secondsPerRep: 5, loadFactor: 0.65 },
-  { id: 'squat', name: 'Приседания со штангой', type: 'strength', met: 6.5, secondsPerRep: 5, loadFactor: 0.7 },
-  { id: 'leg-press', name: 'Жим ногами', type: 'strength', met: 6.2, secondsPerRep: 4.5, loadFactor: 0.45 },
-  { id: 'leg-extension', name: 'Разгибание ног в тренажёре', type: 'strength', met: 5.4, secondsPerRep: 4, loadFactor: 0.75 },
-  { id: 'leg-curl', name: 'Сгибание ног в тренажёре', type: 'strength', met: 5.4, secondsPerRep: 4, loadFactor: 0.75 },
-  { id: 'calf-raise', name: 'Подъём на носки', type: 'strength', met: 5.2, secondsPerRep: 3, loadFactor: 0.65 },
-  { id: 'triceps-pushdown', name: 'Разгибание рук на верхнем блоке', type: 'strength', met: 5.3, secondsPerRep: 4, loadFactor: 0.9 },
-  { id: 'french-press', name: 'Французский жим', type: 'strength', met: 5.4, secondsPerRep: 4, loadFactor: 1 },
-  { id: 'push-up', name: 'Отжимания', type: 'strength', met: 6, secondsPerRep: 3, loadFactor: 0 },
-  { id: 'pull-up', name: 'Подтягивания', type: 'strength', met: 7, secondsPerRep: 4, loadFactor: 0 },
-  { id: 'custom-strength', name: 'Другое силовое упражнение', type: 'strength', met: 5.5, secondsPerRep: 4, loadFactor: 0.8 },
-  { id: 'running', name: 'Бег', type: 'cardio', met: 9.8, supportsIntervals: true },
-  { id: 'elliptical', name: 'Эллиптический тренажёр (орбитрек)', type: 'cardio', met: 7 },
-  { id: 'cycling', name: 'Велосипед / велотренажёр', type: 'cardio', met: 7.5 },
-  { id: 'rowing-machine', name: 'Гребной тренажёр', type: 'cardio', met: 7 },
-  { id: 'stair-stepper', name: 'Степпер / лестница', type: 'cardio', met: 8.8 },
-  { id: 'jump-rope', name: 'Прыжки на скакалке', type: 'cardio', met: 11.8 },
-  { id: 'swimming', name: 'Плавание', type: 'cardio', met: 7 },
-  { id: 'brisk-walk', name: 'Быстрая ходьба / дорожка', type: 'cardio', met: 4.8 },
-  { id: 'hiking', name: 'Поход / ходьба по пересечённой местности', type: 'cardio', met: 6 },
-  { id: 'football', name: 'Футбол', type: 'cardio', met: 8 },
-  { id: 'boxing', name: 'Бокс / работа с мешком', type: 'cardio', met: 8.5 },
-  { id: 'plank', name: 'Планка / статические упражнения', type: 'cardio', met: 3.8 },
-  { id: 'custom-cardio', name: 'Другая кардиотренировка', type: 'cardio', met: 6 }
-];
-
-function localDateString(date = new Date()) {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-}
-
-function normalizedProductName(value) {
-  return String(value || '')
-    .trim()
-    .toLocaleLowerCase('ru-RU')
-    .replace(/ё/g, 'е')
-    .replace(/[.,;:()\[\]{}"'«»]/g, ' ')
-    .replace(/\s+/g, ' ');
-}
-
-function mergeDefaultProducts(products) {
-  const byName = new Map();
-  const ids = new Set();
-
-  for (const product of Array.isArray(products) ? products : []) {
-    const nameKey = normalizedProductName(product.name);
-    if (!nameKey) continue;
-    const previous = byName.get(nameKey);
-    // A product entered or edited by the user is authoritative over a
-    // built-in item with the same visible name.
-    if (!previous || (previous.builtIn && !product.builtIn)) byName.set(nameKey, product);
-  }
-
-  for (const product of byName.values()) ids.add(product.id);
-  for (const product of DEFAULT_PRODUCTS) {
-    const nameKey = normalizedProductName(product.name);
-    if (!ids.has(product.id) && !byName.has(nameKey)) {
-      byName.set(nameKey, product);
-      ids.add(product.id);
-    }
-  }
-  return [...byName.values()];
-}
-
-function defaultState() {
-  return {
-    goals: { kcal: 2200, p: 160, f: 75, c: 230 },
-    profile: { weightKg: 75, strideCm: 72 },
-    productCatalogVersion: PRODUCT_CATALOG_VERSION,
-    products: DEFAULT_PRODUCTS,
-    entries: [],
-    activities: [],
-    dailyMovement: {},
-    selectedDate: localDateString()
-  };
-}
-
-function loadState() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return defaultState();
-    const parsed = JSON.parse(raw);
-    const defaults = defaultState();
-    return {
-      ...defaults,
-      ...parsed,
-      goals: { ...defaults.goals, ...(parsed.goals || {}) },
-      profile: { ...defaults.profile, ...(parsed.profile || {}) },
-      productCatalogVersion: PRODUCT_CATALOG_VERSION,
-      products: num(parsed.productCatalogVersion) < PRODUCT_CATALOG_VERSION
-        ? mergeDefaultProducts(parsed.products)
-        : (Array.isArray(parsed.products) ? parsed.products : DEFAULT_PRODUCTS),
-      entries: Array.isArray(parsed.entries) ? parsed.entries : [],
-      activities: Array.isArray(parsed.activities) ? parsed.activities : [],
-      dailyMovement: parsed.dailyMovement && typeof parsed.dailyMovement === 'object' ? parsed.dailyMovement : {}
-    };
-  } catch {
-    return defaultState();
-  }
-}
+  ['dumbbell-curl','Подъём гантелей на бицепс','strength',5.5,4,1.2],['barbell-curl','Подъём штанги на бицепс','strength',5.7,4,1.1],
+  ['hyperextension','Гиперэкстензия','strength',5.2,4,.8],['pec-deck','Бабочка — сведение рук','strength',5.3,4,.9],
+  ['bent-over-row','Тяга штанги в наклоне','strength',6.1,4,.85],['bench-press','Жим штанги лёжа','strength',6,4,.8],
+  ['incline-bench-press','Жим на наклонной скамье','strength',6,4,.85],['dumbbell-bench-press','Жим гантелей лёжа','strength',5.8,4,1],
+  ['shoulder-press','Жим гантелей над головой','strength',5.8,4,1],['lateral-raise','Разведение гантелей в стороны','strength',5.2,4,1.3],
+  ['lat-pulldown','Тяга верхнего блока','strength',5.8,4,.85],['seated-row','Тяга горизонтального блока','strength',5.8,4,.85],
+  ['deadlift','Становая тяга','strength',6.5,5,.65],['squat','Приседания со штангой','strength',6.5,5,.7],['leg-press','Жим ногами','strength',6.2,4.5,.45],
+  ['leg-extension','Разгибание ног в тренажёре','strength',5.4,4,.75],['leg-curl','Сгибание ног в тренажёре','strength',5.4,4,.75],
+  ['calf-raise','Подъём на носки','strength',5.2,3,.65],['triceps-pushdown','Разгибание рук на верхнем блоке','strength',5.3,4,.9],
+  ['push-up','Отжимания','strength',6,3,0],['pull-up','Подтягивания','strength',7,4,0],['custom-strength','Другое силовое упражнение','strength',5.5,4,.8],
+  ['running','Бег','cardio',9.8],['elliptical','Эллиптический тренажёр','cardio',7],['cycling','Велосипед / велотренажёр','cardio',7.5],
+  ['rowing-machine','Гребной тренажёр','cardio',7],['stair-stepper','Степпер / лестница','cardio',8.8],['jump-rope','Прыжки на скакалке','cardio',11.8],
+  ['swimming','Плавание','cardio',7],['brisk-walk','Быстрая ходьба / дорожка','cardio',4.8],['hiking','Поход','cardio',6],
+  ['football','Футбол','cardio',8],['boxing','Бокс / работа с мешком','cardio',8.5],['plank','Планка / статика','cardio',3.8],['custom-cardio','Другая кардиотренировка','cardio',6]
+].map(([id,name,type,met,secondsPerRep=0,loadFactor=0]) => ({ id,name,type,met,secondsPerRep,loadFactor,supportsIntervals:id==='running' }));
 
 let state = loadState();
+state.selectedDate = Core.localDateString();
+let activeProductId = '';
+let strengthSets = [];
 let runningIntervals = [];
+let progressDays = 7;
+let productFilter = 'all';
+let toastTimer;
+let restTimer;
 
-function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-function num(v) { return Number(v) || 0; }
-function round1(v) { return Math.round((num(v) + Number.EPSILON) * 10) / 10; }
-function round2(v) { return Math.round((num(v) + Number.EPSILON) * 100) / 100; }
-function clamp(v, min, max) { return Math.min(Math.max(v, min), max); }
-function uid() { return crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`; }
-
-function macrosFor(entry) {
-  const factor = num(entry.grams) / 100;
-  return { p: num(entry.p) * factor, f: num(entry.f) * factor, c: num(entry.c) * factor, kcal: num(entry.kcal) * factor };
+function loadState() {
+  try { return Core.normalizeState(JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'), DEFAULT_PRODUCTS); }
+  catch { return Core.normalizeState({}, DEFAULT_PRODUCTS); }
 }
 
-function totalsFor(date) {
-  return state.entries.filter(entry => entry.date === date).reduce((acc, entry) => {
-    const macros = macrosFor(entry);
-    acc.p += macros.p; acc.f += macros.f; acc.c += macros.c; acc.kcal += macros.kcal;
-    return acc;
-  }, { p: 0, f: 0, c: 0, kcal: 0 });
-}
-
-function walkingFor(date) {
-  const saved = state.dailyMovement[date] || {};
-  const steps = Math.max(0, num(saved.steps));
-  const calculatedDistance = steps * num(state.profile.strideCm) / 100000;
-  const distanceKm = Math.max(0, saved.distanceKm === '' || saved.distanceKm == null ? calculatedDistance : num(saved.distanceKm));
-  const calories = num(state.profile.weightKg) * distanceKm * 0.5;
-  return { steps, distanceKm, calories };
-}
-
-function activityTotalsFor(date) {
-  const workoutCalories = state.activities
-    .filter(activity => activity.date === date)
-    .reduce((sum, activity) => sum + num(activity.calories), 0);
-  const walking = walkingFor(date);
-  return { workoutCalories, walking, calories: workoutCalories + walking.calories };
-}
-
-function kcalFromMet(met, minutes) {
-  return num(met) * 3.5 * num(state.profile.weightKg) / 200 * Math.max(0, num(minutes));
-}
-
-function runningMet(speed) {
-  const value = num(speed);
-  if (value < 6.4) return 6;
-  if (value < 8) return 8.3;
-  if (value < 9.7) return 9.8;
-  if (value < 11.3) return 11;
-  if (value < 12.9) return 11.8;
-  if (value < 14.5) return 12.8;
-  return 14.5;
-}
-
-function strengthEstimate(exercise, sets, reps, liftedWeight, restSeconds) {
-  const totalReps = Math.max(0, num(sets) * num(reps));
-  const activeMinutes = totalReps * num(exercise.secondsPerRep || 4) / 60;
-  const restMinutes = Math.max(0, num(sets) - 1) * Math.max(0, num(restSeconds)) / 60;
-  const bodyWeight = Math.max(1, num(state.profile.weightKg));
-  const loadBoost = clamp(num(liftedWeight) / bodyWeight * num(exercise.loadFactor), 0, 2.5);
-  const calories = kcalFromMet(num(exercise.met) + loadBoost, activeMinutes) + kcalFromMet(2, restMinutes);
-  return { calories, totalReps, minutes: activeMinutes + restMinutes, perRep: totalReps ? calories / totalReps : 0 };
-}
-
-function cardioEstimate(exercise, duration, distance, speed, intensity, intervals = []) {
-  if (exercise.id === 'running' && intervals.length) {
-    const result = intervals.reduce((acc, interval) => {
-      const minutes = Math.max(0, num(interval.minutes));
-      const intervalSpeed = Math.max(0, num(interval.speed));
-      acc.minutes += minutes;
-      acc.distance += intervalSpeed * minutes / 60;
-      acc.calories += kcalFromMet(runningMet(intervalSpeed), minutes);
-      return acc;
-    }, { minutes: 0, distance: 0, calories: 0 });
-    return result;
+function saveState(candidate = state, quiet = false) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(candidate)); return true; }
+  catch {
+    if (!quiet) alert('Не удалось сохранить данные. Освободите место в Safari и экспортируйте резервную копию.');
+    return false;
   }
-
-  let minutes = Math.max(0, num(duration));
-  let km = Math.max(0, num(distance));
-  let kmh = Math.max(0, num(speed));
-  if (!minutes && km && kmh) minutes = km / kmh * 60;
-  if (!kmh && km && minutes) kmh = km / (minutes / 60);
-  if (!km && kmh && minutes) km = kmh * minutes / 60;
-
-  let met = num(exercise.met);
-  if (exercise.id === 'running' && kmh) met = runningMet(kmh);
-  else met *= ({ light: 0.78, moderate: 1, hard: 1.25 }[intensity] || 1);
-  return { minutes, distance: km, calories: kcalFromMet(met, minutes), speed: kmh };
 }
 
-function humanDate(dateString) {
-  const [y, m, d] = dateString.split('-').map(Number);
-  const date = new Date(y, m - 1, d);
-  const opts = { weekday: 'short', day: 'numeric', month: 'long' };
-  let text = new Intl.DateTimeFormat('ru-RU', opts).format(date);
-  text = text.charAt(0).toUpperCase() + text.slice(1);
-  return dateString === localDateString() ? `Сегодня · ${text}` : text;
-}
+function commit(mutator) { mutator(state); saveState(); }
+function clone(value) { return JSON.parse(JSON.stringify(value)); }
+function dateOffset(dateString, offset) { const [y,m,d] = dateString.split('-').map(Number); const date = new Date(y,m-1,d); date.setDate(date.getDate()+offset); return Core.localDateString(date); }
+function humanDate(dateString) { const [y,m,d]=dateString.split('-').map(Number); const date=new Date(y,m-1,d); let label=new Intl.DateTimeFormat('ru-RU',{weekday:'short',day:'numeric',month:'long'}).format(date); label=label.charAt(0).toUpperCase()+label.slice(1); return dateString===Core.localDateString()?`Сегодня · ${label}`:label; }
+function mealName(id) { return MEALS.find(([key]) => key === id)?.[1] || 'Перекус'; }
+function macrosFor(entry) { return Core.macrosFor(entry); }
+function totalsFor(date) { return state.entries.filter(e=>e.date===date).reduce((a,e)=>{const m=macrosFor(e);a.p+=m.p;a.f+=m.f;a.c+=m.c;a.kcal+=m.kcal;return a;},{p:0,f:0,c:0,kcal:0}); }
+function walkingFor(date) { const saved=state.dailyMovement[date]||{}; const steps=Math.max(0,Core.num(saved.steps)); const distance=saved.distanceKm===''||saved.distanceKm==null?steps*state.profile.strideCm/100000:Core.num(saved.distanceKm); return {steps,distanceKm:distance,calories:state.profile.weightKg*distance*.5}; }
+function activityTotalsFor(date) { const walking=walkingFor(date); const workoutCalories=state.activities.filter(a=>a.date===date).reduce((sum,a)=>sum+Core.num(a.calories),0); return {walking,workoutCalories,calories:walking.calories+workoutCalories}; }
+function setProgress(id,value,goal){document.getElementById(id).style.width=`${goal>0?Core.clamp(value/goal*100,0,100):0}%`;}
 
-function offsetSelectedDate(days) {
-  const [y, m, d] = state.selectedDate.split('-').map(Number);
-  const date = new Date(y, m - 1, d);
-  date.setDate(date.getDate() + days);
-  state.selectedDate = localDateString(date);
-  saveState();
-  renderToday();
+function showToast(message, actionLabel = '', action = null) {
+  const toast=document.getElementById('toast'); const button=document.getElementById('toast-action');
+  document.getElementById('toast-message').textContent=message; button.textContent=actionLabel; button.hidden=!action;
+  button.onclick=action?()=>{action();hideToast();}:null; toast.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(hideToast, action?5000:2200);
 }
-
-function setProgress(id, value, goal) {
-  const pct = goal > 0 ? clamp(value / goal * 100, 0, 100) : 0;
-  document.getElementById(id).style.width = `${pct}%`;
-}
+function hideToast(){document.getElementById('toast').classList.remove('show');}
+function removeWithUndo(collection,id,label){const index=state[collection].findIndex(item=>item.id===id);if(index<0)return;const removed=state[collection][index];state[collection].splice(index,1);saveState();renderAll();showToast(label,'Отменить',()=>{state[collection].splice(index,0,removed);saveState();renderAll();});}
 
 function renderToday() {
-  const food = totalsFor(state.selectedDate);
-  const activity = activityTotalsFor(state.selectedDate);
-  const net = food.kcal - activity.calories;
-  const remaining = state.goals.kcal - net;
-  const calorieBudget = state.goals.kcal + activity.calories;
-
-  document.getElementById('selected-date-label').textContent = humanDate(state.selectedDate);
-  document.getElementById('kcal-total').textContent = Math.round(food.kcal);
-  document.getElementById('kcal-goal').textContent = Math.round(state.goals.kcal);
-  document.getElementById('kcal-burned').textContent = Math.round(activity.calories);
-  document.getElementById('kcal-net').textContent = Math.round(net);
-  document.getElementById('kcal-left').textContent = Math.round(remaining);
-  document.getElementById('protein-total').textContent = round1(food.p);
-  document.getElementById('fat-total').textContent = round1(food.f);
-  document.getElementById('carb-total').textContent = round1(food.c);
-  document.getElementById('protein-goal').textContent = round1(state.goals.p);
-  document.getElementById('fat-goal').textContent = round1(state.goals.f);
-  document.getElementById('carb-goal').textContent = round1(state.goals.c);
-  setProgress('protein-progress', food.p, state.goals.p);
-  setProgress('fat-progress', food.f, state.goals.f);
-  setProgress('carb-progress', food.c, state.goals.c);
-  const kcalPct = calorieBudget > 0 ? clamp(food.kcal / calorieBudget * 100, 0, 100) : 0;
-  document.getElementById('calorie-ring').style.setProperty('--p', `${kcalPct}%`);
-
-  renderActivity(activity);
-  renderMeals();
+  const food=totalsFor(state.selectedDate); const activity=activityTotalsFor(state.selectedDate); const credited=activity.calories*state.goals.activityCredit; const budget=state.goals.kcal+credited; const remaining=budget-food.kcal;
+  document.getElementById('selected-date-label').textContent=humanDate(state.selectedDate);
+  [['kcal-total',Math.round(food.kcal)],['kcal-goal',Math.round(state.goals.kcal)],['kcal-burned',Math.round(activity.calories)],['kcal-credited',Math.round(credited)],['kcal-left',Math.round(remaining)],['protein-total',Core.round1(food.p)],['fat-total',Core.round1(food.f)],['carb-total',Core.round1(food.c)],['protein-goal',Core.round1(state.goals.p)],['fat-goal',Core.round1(state.goals.f)],['carb-goal',Core.round1(state.goals.c)]].forEach(([id,value])=>document.getElementById(id).textContent=value);
+  document.getElementById('kcal-left').classList.toggle('danger-text',remaining<0); setProgress('protein-progress',food.p,state.goals.p);setProgress('fat-progress',food.f,state.goals.f);setProgress('carb-progress',food.c,state.goals.c);document.getElementById('calorie-ring').style.setProperty('--p',`${budget>0?Core.clamp(food.kcal/budget*100,0,100):0}%`);
+  const wellness=state.wellness[state.selectedDate]||{}; document.getElementById('today-sleep').textContent=wellness.sleepHours?`${Core.round1(wellness.sleepHours)} ч сна · качество ${wellness.sleepQuality||'—'}/5`:'Сон не записан'; document.getElementById('today-readiness').textContent=wellness.readiness?`Готовность ${wellness.readiness}/5 · усталость ${wellness.fatigue||'—'}/5`:'Добавьте самочувствие';
+  renderActivity(activity); renderMeals();
 }
 
-function renderActivity(activity = activityTotalsFor(state.selectedDate)) {
-  document.getElementById('activity-kcal-total').textContent = Math.round(activity.calories);
-  document.getElementById('walking-steps-total').textContent = Math.round(activity.walking.steps).toLocaleString('ru-RU');
-  document.getElementById('walking-distance-total').textContent = round2(activity.walking.distanceKm);
-  document.getElementById('walking-kcal-total').textContent = Math.round(activity.walking.calories);
+function element(tag,className,text){const node=document.createElement(tag);if(className)node.className=className;if(text!=null)node.textContent=text;return node;}
+function actionButton(label,aria,handler,className='row-action'){const button=element('button',className,label);button.type='button';button.setAttribute('aria-label',aria);button.addEventListener('click',handler);return button;}
 
-  const list = document.getElementById('activity-list');
-  list.innerHTML = '';
-  const activities = state.activities.filter(item => item.date === state.selectedDate);
-  if (!activities.length) {
-    const empty = document.createElement('div');
-    empty.className = 'empty-activity';
-    empty.textContent = 'Тренировок пока нет';
-    list.appendChild(empty);
-    return;
-  }
-  for (const activityItem of activities) {
-    const row = document.createElement('div');
-    row.className = 'activity-row';
-    const copy = document.createElement('div');
-    const title = document.createElement('strong');
-    title.textContent = activityItem.name;
-    const details = document.createElement('small');
-    details.textContent = `${activityItem.details} · ≈ ${Math.round(activityItem.calories)} ккал`;
-    copy.append(title, details);
-    const del = document.createElement('button');
-    del.className = 'delete-entry';
-    del.type = 'button';
-    del.textContent = '×';
-    del.setAttribute('aria-label', 'Удалить тренировку');
-    del.addEventListener('click', () => deleteActivity(activityItem.id));
-    row.append(copy, del);
-    list.appendChild(row);
-  }
+function renderActivity(activity=activityTotalsFor(state.selectedDate)) {
+  document.getElementById('activity-kcal-total').textContent=Math.round(activity.calories);document.getElementById('walking-steps-total').textContent=Math.round(activity.walking.steps).toLocaleString('ru-RU');document.getElementById('walking-distance-total').textContent=Core.round2(activity.walking.distanceKm);document.getElementById('walking-kcal-total').textContent=Math.round(activity.walking.calories);
+  const list=document.getElementById('activity-list');list.replaceChildren();const activities=state.activities.filter(a=>a.date===state.selectedDate);
+  if(!activities.length){list.append(element('div','empty-activity','Тренировок пока нет'));return;}
+  activities.forEach(item=>{const row=element('div','activity-row');const copy=element('div');copy.append(element('strong','',item.name),element('small','',`${item.details} · ≈ ${Math.round(item.calories)} ккал`));const actions=element('div','row-actions');if(item.type==='strength'&&item.restSeconds)actions.append(actionButton('⏱','Запустить таймер отдыха',()=>startRestTimer(item.restSeconds)));actions.append(actionButton('✎','Редактировать тренировку',()=>openWorkoutDialog(item)),actionButton('×','Удалить тренировку',()=>removeWithUndo('activities',item.id,'Тренировка удалена'),'row-action danger'));row.append(copy,actions);list.append(row);});
 }
 
-function renderMeals() {
-  const mealsEl = document.getElementById('meals');
-  mealsEl.innerHTML = '';
-  for (const [mealId, mealName] of MEALS) {
-    const entries = state.entries.filter(entry => entry.date === state.selectedDate && entry.meal === mealId);
-    const mealKcal = entries.reduce((sum, entry) => sum + macrosFor(entry).kcal, 0);
-    const article = document.createElement('article');
-    article.className = 'meal-card card';
-    const header = document.createElement('div');
-    header.className = 'meal-header';
-    const heading = document.createElement('h3');
-    heading.textContent = mealName;
-    const kcal = document.createElement('span');
-    kcal.textContent = `${Math.round(mealKcal)} ккал`;
-    header.append(heading, kcal);
-    article.appendChild(header);
-    if (!entries.length) {
-      const empty = document.createElement('div');
-      empty.className = 'empty-meal';
-      empty.textContent = 'Пока ничего не добавлено';
-      article.appendChild(empty);
-    } else {
-      for (const entry of entries) {
-        const macrosValue = macrosFor(entry);
-        const row = document.createElement('div');
-        row.className = 'entry-row';
-        const main = document.createElement('div');
-        main.className = 'entry-main';
-        const strong = document.createElement('strong');
-        strong.textContent = entry.name;
-        const small = document.createElement('small');
-        small.textContent = `${round1(entry.grams)} г · ${Math.round(macrosValue.kcal)} ккал`;
-        main.append(strong, small);
-        const macros = document.createElement('div');
-        macros.className = 'entry-macros';
-        macros.textContent = `Б ${round1(macrosValue.p)} · Ж ${round1(macrosValue.f)} · У ${round1(macrosValue.c)}`;
-        const del = document.createElement('button');
-        del.className = 'delete-entry';
-        del.type = 'button';
-        del.textContent = '×';
-        del.setAttribute('aria-label', 'Удалить');
-        del.addEventListener('click', () => deleteEntry(entry.id));
-        row.append(main, macros, del);
-        article.appendChild(row);
-      }
-    }
-    mealsEl.appendChild(article);
-  }
-}
+function renderMeals(){const root=document.getElementById('meals');root.replaceChildren();MEALS.forEach(([mealId,name])=>{const entries=state.entries.filter(e=>e.date===state.selectedDate&&e.meal===mealId);const article=element('article','meal-card card');const header=element('div','meal-header');const title=element('div');title.append(element('h3','',name),element('span','',`${Math.round(entries.reduce((s,e)=>s+macrosFor(e).kcal,0))} ккал`));const actions=element('div','meal-actions');actions.append(actionButton('+','Добавить в этот приём пищи',()=>openEntryDialog(mealId), 'activity-add'));if(entries.length)actions.append(actionButton('☆','Сохранить это блюдо',()=>saveMeal(mealId),'row-action'),actionButton('↗','Скопировать приём пищи',()=>copyMeal(mealId),'row-action'));header.append(title,actions);article.append(header);if(!entries.length)article.append(element('div','empty-meal','Пока ничего не добавлено'));entries.forEach(entry=>{const m=macrosFor(entry);const row=element('div','entry-row');const main=element('button','entry-main entry-edit');main.type='button';main.append(element('strong','',entry.name),element('small','',`${Core.round1(entry.grams)} г · ${Math.round(m.kcal)} ккал`));main.addEventListener('click',()=>openEntryDialog(entry.meal,entry));const macros=element('div','entry-macros',`Б ${Core.round1(m.p)} · Ж ${Core.round1(m.f)} · У ${Core.round1(m.c)}`);row.append(main,macros,actionButton('×','Удалить',()=>removeWithUndo('entries',entry.id,'Запись удалена'),'row-action danger'));article.append(row);});root.append(article);});}
 
-function renderProducts() {
-  const q = document.getElementById('product-search').value.trim().toLowerCase();
-  const list = document.getElementById('products-list');
-  list.innerHTML = '';
-  const products = [...state.products]
-    .sort((a, b) => a.name.localeCompare(b.name, 'ru'))
-    .filter(product => product.name.toLowerCase().includes(q));
-  for (const product of products) {
-    const row = document.createElement('article'); row.className = 'product-row card';
-    const copy = document.createElement('div');
-    const strong = document.createElement('strong'); strong.textContent = product.name;
-    const small = document.createElement('small');
-    small.textContent = `${Math.round(product.kcal)} ккал · Б ${round1(product.p)} · Ж ${round1(product.f)} · У ${round1(product.c)} / 100 г`;
-    copy.append(strong, small);
-    const actions = document.createElement('div'); actions.className = 'product-actions';
-    const edit = document.createElement('button'); edit.type = 'button'; edit.textContent = '✎'; edit.setAttribute('aria-label', 'Редактировать'); edit.addEventListener('click', () => openProductDialog(product));
-    const del = document.createElement('button'); del.type = 'button'; del.textContent = '×'; del.setAttribute('aria-label', 'Удалить'); del.addEventListener('click', () => deleteProduct(product.id));
-    actions.append(edit, del); row.append(copy, actions); list.appendChild(row);
-  }
-}
+function copyMeal(mealId){const sourceDate=dateOffset(state.selectedDate,-1);const source=state.entries.filter(e=>e.date===sourceDate&&e.meal===mealId);if(!source.length){showToast('В предыдущий день здесь нет записей');return;}source.forEach(entry=>state.entries.push({...clone(entry),id:Core.uid('entry'),date:state.selectedDate}));saveState();renderToday();showToast(`${mealName(mealId)} скопирован со вчера`);}
+function saveMeal(mealId){const entries=state.entries.filter(e=>e.date===state.selectedDate&&e.meal===mealId);if(!entries.length)return;const name=prompt('Название сохранённого блюда',`${mealName(mealId)} ${humanDate(state.selectedDate)}`);if(!name)return;state.savedMeals.push({id:Core.uid('meal'),name:name.trim().slice(0,80),meal:mealId,entries:entries.map(({date,meal,id,...rest})=>clone(rest))});saveState();renderSavedMeals();showToast('Блюдо сохранено');}
+function applySavedMeal(saved){saved.entries.forEach(entry=>state.entries.push({...clone(entry),id:Core.uid('entry'),date:state.selectedDate,meal:saved.meal||'snack'}));saveState();renderToday();showView('today-view');showToast(`Добавлено: ${saved.name}`);}
 
-function renderSettings() {
-  document.getElementById('goal-kcal').value = state.goals.kcal;
-  document.getElementById('goal-protein').value = state.goals.p;
-  document.getElementById('goal-fat').value = state.goals.f;
-  document.getElementById('goal-carb').value = state.goals.c;
-  document.getElementById('profile-weight').value = state.profile.weightKg;
-  document.getElementById('profile-stride').value = state.profile.strideCm;
-}
+function selectedProduct(){return state.products.find(p=>p.id===activeProductId);}
+function openEntryDialog(meal='breakfast',entry=null){document.getElementById('entry-edit-id').value=entry?.id||'';document.getElementById('entry-title').textContent=entry?'Редактировать еду':'Добавить еду';document.getElementById('entry-meal').value=meal;activeProductId=entry?.productId||state.products.find(p=>p.name===entry?.name)?.id||state.recentProductIds[0]||state.products[0]?.id||'';const product=selectedProduct();document.getElementById('entry-product-search').value=product?.name||'';document.getElementById('entry-product-id').value=activeProductId;document.getElementById('entry-unit').value='grams';document.getElementById('entry-amount').value=entry?.grams||100;renderProductPicker();updateEntryPreview();document.getElementById('entry-dialog').showModal();}
+function pickerProducts(){const query=Core.normalizedProductName(document.getElementById('entry-product-search').value);return [...state.products].sort((a,b)=>{const ar=state.recentProductIds.indexOf(a.id),br=state.recentProductIds.indexOf(b.id);const as=(a.favorite?1000:0)+(ar<0?0:100-ar),bs=(b.favorite?1000:0)+(br<0?0:100-br);return bs-as||a.name.localeCompare(b.name,'ru');}).filter(p=>!query||Core.normalizedProductName(p.name).includes(query)).slice(0,12);}
+function renderProductPicker(){const root=document.getElementById('entry-product-results');root.replaceChildren();pickerProducts().forEach(product=>{const button=element('button',`picker-item${product.id===activeProductId?' selected':''}`);button.type='button';button.append(element('strong','',`${product.favorite?'★ ':''}${product.name}`),element('small','',`${Math.round(product.kcal)} ккал / 100 г · ${product.servingName} ${Core.round1(product.servingGrams)} г`));button.addEventListener('click',()=>{activeProductId=product.id;document.getElementById('entry-product-id').value=product.id;document.getElementById('entry-product-search').value=product.name;renderProductPicker();updateEntryPreview();});root.append(button);});if(!root.children.length)root.append(element('div','empty-meal','Ничего не найдено — создайте продукт в базе.'));}
+function entryGrams(){const product=selectedProduct();const amount=Core.num(document.getElementById('entry-amount').value);return document.getElementById('entry-unit').value==='serving'?amount*Core.num(product?.servingGrams||100):amount;}
+function updateEntryPreview(){const product=selectedProduct();const root=document.getElementById('entry-preview');if(!product){root.textContent='Выберите продукт.';return;}const grams=entryGrams(),factor=grams/100;root.textContent=`${Core.round1(grams)} г · ${Math.round(product.kcal*factor)} ккал · Б ${Core.round1(product.p*factor)} · Ж ${Core.round1(product.f*factor)} · У ${Core.round1(product.c*factor)}`;}
 
-function populateEntryProducts() {
-  const select = document.getElementById('entry-product');
-  const previous = select.value;
-  select.innerHTML = '';
-  [...state.products].sort((a, b) => a.name.localeCompare(b.name, 'ru')).forEach(product => {
-    const option = document.createElement('option');
-    option.value = product.id; option.textContent = product.name; select.appendChild(option);
-  });
-  if ([...select.options].some(option => option.value === previous)) select.value = previous;
-  updateEntryPreview();
-}
+function renderProducts(){const query=Core.normalizedProductName(document.getElementById('product-search').value);const root=document.getElementById('products-list');root.replaceChildren();const products=[...state.products].filter(p=>(productFilter==='all'||p.favorite)&&(!query||Core.normalizedProductName(p.name).includes(query))).sort((a,b)=>Number(b.favorite)-Number(a.favorite)||a.name.localeCompare(b.name,'ru'));products.forEach(product=>{const row=element('article','product-row card');const copy=element('div');copy.append(element('strong','',product.name),element('small','',`${Math.round(product.kcal)} ккал · Б ${Core.round1(product.p)} · Ж ${Core.round1(product.f)} · У ${Core.round1(product.c)} / 100 г · ${product.servingName} ${Core.round1(product.servingGrams)} г`));const actions=element('div','product-actions');actions.append(actionButton(product.favorite?'★':'☆',product.favorite?'Убрать из избранного':'Добавить в избранное',()=>{product.favorite=!product.favorite;saveState();renderProducts();}),actionButton('✎','Редактировать',()=>openProductDialog(product)),actionButton('×','Удалить',()=>deleteProduct(product.id),'row-action danger'));row.append(copy,actions);root.append(row);});if(!products.length)root.append(element('div','empty-state','Продукты не найдены'));renderSavedMeals();}
+function renderSavedMeals(){const root=document.getElementById('saved-meals-list');root.replaceChildren();state.savedMeals.forEach(saved=>{const row=element('article','product-row card');const copy=element('div');copy.append(element('strong','',saved.name),element('small','',`${mealName(saved.meal)} · ${saved.entries.length} поз.`));const actions=element('div','product-actions');actions.append(actionButton('+','Добавить блюдо',()=>applySavedMeal(saved)),actionButton('×','Удалить блюдо',()=>removeWithUndo('savedMeals',saved.id,'Блюдо удалено'),'row-action danger'));row.append(copy,actions);root.append(row);});if(!state.savedMeals.length)root.append(element('div','empty-state','Сохраните заполненный приём пищи — он появится здесь.'));}
+function openProductDialog(product=null){document.getElementById('product-title').textContent=product?'Редактировать продукт':'Новый продукт';[['product-edit-id',product?.id||''],['product-name',product?.name||''],['product-protein',product?.p??''],['product-fat',product?.f??''],['product-carb',product?.c??''],['product-kcal',product?.kcal??''],['product-serving-name',product?.servingName||'порция'],['product-serving-grams',product?.servingGrams||100]].forEach(([id,value])=>document.getElementById(id).value=value);document.getElementById('product-dialog').showModal();}
+function deleteProduct(id){const product=state.products.find(p=>p.id===id);if(!product||!confirm(`Удалить «${product.name}»? История питания сохранится.`))return;removeWithUndo('products',id,'Продукт удалён');}
 
-function populateExercises() {
-  const select = document.getElementById('workout-exercise');
-  select.innerHTML = '';
-  for (const [type, label] of [['strength', 'Силовые'], ['cardio', 'Кардио и активность']]) {
-    const group = document.createElement('optgroup');
-    group.label = label;
-    EXERCISES.filter(exercise => exercise.type === type).forEach(exercise => {
-      const option = document.createElement('option');
-      option.value = exercise.id; option.textContent = exercise.name; group.appendChild(option);
-    });
-    select.appendChild(group);
-  }
-}
+function populateExercises(){const select=document.getElementById('workout-exercise');select.replaceChildren();[['strength','Силовые'],['cardio','Кардио и активность']].forEach(([type,label])=>{const group=document.createElement('optgroup');group.label=label;EXERCISES.filter(e=>e.type===type).forEach(ex=>{const option=document.createElement('option');option.value=ex.id;option.textContent=ex.name;group.append(option);});select.append(group);});}
+function selectedExercise(){return EXERCISES.find(e=>e.id===document.getElementById('workout-exercise').value)||EXERCISES[0];}
+function addStrengthSet(reps=10,weight=10){strengthSets.push({id:Core.uid('set'),reps,weight,done:true});renderStrengthSets();updateWorkoutPreview();}
+function renderStrengthSets(){const root=document.getElementById('strength-sets');root.replaceChildren();strengthSets.forEach((set,index)=>{const row=element('div','strength-set-row');row.append(element('span','set-number',`${index+1}`));const reps=document.createElement('input');reps.type='number';reps.min='0';reps.max='1000';reps.value=set.reps;reps.setAttribute('aria-label',`Повторения, подход ${index+1}`);reps.addEventListener('input',()=>{set.reps=Core.num(reps.value);updateWorkoutPreview();});const weight=document.createElement('input');weight.type='number';weight.min='0';weight.max='2000';weight.step='.5';weight.value=set.weight;weight.setAttribute('aria-label',`Вес, подход ${index+1}`);weight.addEventListener('input',()=>{set.weight=Core.num(weight.value);updateWorkoutPreview();});row.append(reps,element('span','unit','повт.'),weight,element('span','unit','кг'),actionButton('×',`Удалить подход ${index+1}`,()=>{strengthSets.splice(index,1);renderStrengthSets();updateWorkoutPreview();},'row-action danger'));root.append(row);});}
+function renderRunningIntervals(){const root=document.getElementById('running-intervals');root.replaceChildren();runningIntervals.forEach((interval,index)=>{const row=element('div','interval-row');const minutes=document.createElement('input');minutes.type='number';minutes.min='.5';minutes.step='.5';minutes.value=interval.minutes;minutes.setAttribute('aria-label','Минуты');minutes.addEventListener('input',()=>{interval.minutes=Core.num(minutes.value);updateWorkoutPreview();});const speed=document.createElement('input');speed.type='number';speed.min='1';speed.max='40';speed.step='.1';speed.value=interval.speed;speed.setAttribute('aria-label','Скорость');speed.addEventListener('input',()=>{interval.speed=Core.num(speed.value);updateWorkoutPreview();});row.append(minutes,element('span','unit','мин'),speed,element('span','unit','км/ч'),actionButton('×','Удалить интервал',()=>{runningIntervals.splice(index,1);renderRunningIntervals();updateWorkoutPreview();},'row-action danger'));root.append(row);});}
+function updateWorkoutFields(){const ex=selectedExercise(),strength=ex.type==='strength';document.getElementById('strength-fields').classList.toggle('hidden',!strength);document.getElementById('cardio-fields').classList.toggle('hidden',strength);document.getElementById('running-interval-section').classList.toggle('hidden',!ex.supportsIntervals);document.getElementById('speed-label').classList.toggle('hidden',!['running','cycling','brisk-walk'].includes(ex.id));const previous=[...state.activities].reverse().find(a=>a.exerciseId===ex.id&&a.date!==state.selectedDate);document.getElementById('previous-performance').textContent=previous?`Прошлый результат: ${previous.details}`:'Для этого упражнения пока нет прошлых записей.';updateWorkoutPreview();}
+function workoutEstimate(){const ex=selectedExercise();if(ex.type==='strength'){const reps=strengthSets.reduce((s,x)=>s+Core.num(x.reps),0),volume=strengthSets.reduce((s,x)=>s+Core.num(x.reps)*Core.num(x.weight),0),avgWeight=reps?volume/reps:0,activeMinutes=reps*(ex.secondsPerRep||4)/60,restSeconds=Core.num(document.getElementById('workout-rest').value),restMinutes=Math.max(0,strengthSets.length-1)*restSeconds/60,boost=Core.clamp(avgWeight/state.profile.weightKg*ex.loadFactor,0,2.5),calories=Core.kcalFromMet(ex.met+boost,activeMinutes,state.profile.weightKg)+Core.kcalFromMet(2,restMinutes,state.profile.weightKg);return {exercise:ex,reps,volume,minutes:activeMinutes+restMinutes,calories,restSeconds};}if(ex.id==='running'&&runningIntervals.length){return runningIntervals.reduce((a,x)=>{const min=Math.max(0,Core.num(x.minutes)),speed=Math.max(0,Core.num(x.speed));a.minutes+=min;a.distance+=speed*min/60;a.calories+=Core.kcalFromMet(Core.runningMet(speed),min,state.profile.weightKg);return a;},{exercise:ex,minutes:0,distance:0,calories:0,speed:0});}let minutes=Math.max(0,Core.num(document.getElementById('workout-duration').value)),distance=Math.max(0,Core.num(document.getElementById('workout-distance').value)),speed=Math.max(0,Core.num(document.getElementById('workout-speed').value));if(!minutes&&distance&&speed)minutes=distance/speed*60;if(!speed&&distance&&minutes)speed=distance/(minutes/60);if(!distance&&speed&&minutes)distance=speed*minutes/60;let met=ex.id==='running'&&speed?Core.runningMet(speed):ex.met*({light:.78,moderate:1,hard:1.25}[document.getElementById('workout-intensity').value]||1);return {exercise:ex,minutes,distance,speed,calories:Core.kcalFromMet(met,minutes,state.profile.weightKg)};}
+function updateWorkoutPreview(){const e=workoutEstimate();if(e.exercise.type==='strength'){const previous=[...state.activities].reverse().find(a=>a.exerciseId===e.exercise.id&&a.date!==state.selectedDate);const previousVolume=previous?.setDetails?.length?previous.setDetails.reduce((sum,set)=>sum+Core.num(set.reps)*Core.num(set.weight),0):Core.num(previous?.sets)*Core.num(previous?.reps)*Core.num(previous?.liftedWeight);const delta=previousVolume>0?` · ${e.volume>=previousVolume?'+':''}${Core.round1((e.volume/previousVolume-1)*100)}% к прошлому объёму`:'';document.getElementById('workout-preview').textContent=`≈ ${Math.round(e.calories)} ккал · ${e.reps} повторений · объём ${Math.round(e.volume)} кг${delta}`;}else document.getElementById('workout-preview').textContent=`≈ ${Math.round(e.calories)} ккал · ${Core.round1(e.minutes)} мин · ${Core.round2(e.distance)} км`;}
+function openWorkoutDialog(activity=null){document.getElementById('workout-edit-id').value=activity?.id||'';document.getElementById('workout-title').textContent=activity?'Редактировать тренировку':'Добавить тренировку';document.getElementById('workout-exercise').value=activity?.exerciseId||EXERCISES[0].id;document.getElementById('workout-rest').value=activity?.restSeconds||60;strengthSets=activity?.setDetails?.length?clone(activity.setDetails):Array.from({length:activity?.sets||3},(_,i)=>({id:Core.uid('set'),reps:activity?.reps||10,weight:activity?.liftedWeight||10,done:true}));runningIntervals=clone(activity?.intervals||[]);document.getElementById('workout-duration').value=activity?.duration||30;document.getElementById('workout-distance').value=activity?.distance||'';document.getElementById('workout-speed').value=activity?.speed||'';document.getElementById('workout-intensity').value=activity?.intensity||'moderate';document.getElementById('save-workout-template').checked=false;renderStrengthSets();renderRunningIntervals();updateWorkoutFields();document.getElementById('workout-dialog').showModal();}
+function renderTemplates(){const root=document.getElementById('template-list');root.replaceChildren();state.workoutTemplates.forEach(template=>{const row=element('article','product-row card');const copy=element('div');copy.append(element('strong','',template.name),element('small','',`${template.activities.length} упр.`));const actions=element('div','product-actions');actions.append(actionButton('+','Добавить тренировку по шаблону',()=>{template.activities.forEach(activity=>state.activities.push({...clone(activity),id:Core.uid('activity'),date:state.selectedDate,setDetails:(activity.setDetails||[]).map(set=>({...set,id:Core.uid('set')}))}));saveState();document.getElementById('template-dialog').close();renderToday();showToast('Шаблон добавлен');}),actionButton('×','Удалить шаблон',()=>removeWithUndo('workoutTemplates',template.id,'Шаблон удалён'),'row-action danger'));row.append(copy,actions);root.append(row);});if(!state.workoutTemplates.length)root.append(element('div','empty-state','Сохраните тренировку как шаблон при добавлении.'));}
+function startRestTimer(seconds){clearInterval(restTimer);let left=Math.max(1,Math.round(seconds));const root=document.getElementById('rest-timer');root.classList.remove('hidden');const paint=()=>{document.getElementById('rest-timer-value').textContent=`${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}`;};paint();restTimer=setInterval(()=>{left-=1;paint();if(left<=0){clearInterval(restTimer);root.classList.add('hidden');showToast('Отдых закончен');navigator.vibrate?.([120,80,120]);}},1000);}
 
-function updateEntryPreview() {
-  const product = state.products.find(item => item.id === document.getElementById('entry-product').value);
-  const grams = num(document.getElementById('entry-grams').value);
-  const preview = document.getElementById('entry-preview');
-  if (!product) { preview.textContent = 'Добавьте продукт в базу.'; return; }
-  const factor = grams / 100;
-  preview.textContent = `${Math.round(product.kcal * factor)} ккал · Б ${round1(product.p * factor)} · Ж ${round1(product.f * factor)} · У ${round1(product.c * factor)}`;
-}
+function openRecoveryDialog(date=state.selectedDate){const item=state.wellness[date]||{};document.getElementById('recovery-date').value=date;[['recovery-sleep',item.sleepHours||''],['recovery-quality',item.sleepQuality||''],['recovery-fatigue',item.fatigue||''],['recovery-readiness',item.readiness||''],['recovery-weight',item.weightKg||'']].forEach(([id,value])=>document.getElementById(id).value=value);document.getElementById('recovery-dialog').showModal();}
+function rangeDates(days){return Array.from({length:days},(_,index)=>dateOffset(Core.localDateString(),index-days+1));}
+function average(values){const clean=values.filter(value=>Number.isFinite(value)&&value>0);return clean.length?clean.reduce((s,v)=>s+v,0)/clean.length:0;}
+function renderProgress(){const dates=rangeDates(progressDays),foods=dates.map(totalsFor),sleep=dates.map(date=>Core.num(state.wellness[date]?.sleepHours)),proteinDays=foods.filter(food=>food.p>=state.goals.p).length,workouts=state.activities.filter(a=>dates.includes(a.date)).length;const metrics=document.getElementById('progress-metrics');metrics.replaceChildren();[[`${Math.round(average(foods.map(f=>f.kcal)))} ккал`,'Среднее питание'],[`${Core.round1(average(foods.map(f=>f.p)))} г`,'Средний белок'],[`${proteinDays}/${progressDays}`,'Дней с целью белка'],[`${Core.round1(average(sleep))} ч`,'Средний сон'],[`${workouts}`,'Тренировок']].forEach(([value,label])=>{const card=element('article','metric-card card');card.append(element('strong','',value),element('small','',label));metrics.append(card);});renderBarChart('calorie-chart',dates,foods.map(f=>f.kcal),Math.max(state.goals.kcal,...foods.map(f=>f.kcal)),state.goals.kcal);renderBarChart('sleep-chart',dates,sleep,10,8);const paired=dates.map(date=>({sleep:Core.num(state.wellness[date]?.sleepHours),ready:Core.num(state.wellness[date]?.readiness)})).filter(x=>x.sleep&&x.ready);let insight='Записывайте сон и готовность несколько дней, чтобы увидеть личную тенденцию.';if(paired.length>=4){const low=paired.filter(x=>x.sleep<7),enough=paired.filter(x=>x.sleep>=7),la=average(low.map(x=>x.ready)),ea=average(enough.map(x=>x.ready));if(low.length&&enough.length)insight=ea>la+.3?`В ваших записях готовность выше после сна от 7 часов (${Core.round1(ea)} против ${Core.round1(la)} из 5). Это наблюдение, не доказательство причины.`:'Пока явной связи сна и готовности в ваших записях не видно.';}document.getElementById('recovery-insight').textContent=insight;renderWeight(dates);}
+function renderBarChart(id,dates,values,maxValue,goal){const root=document.getElementById(id);root.replaceChildren();dates.forEach((date,index)=>{const column=element('div','bar-column');const track=element('div','bar-track');const bar=element('div','bar-fill');bar.style.height=`${Core.clamp(values[index]/maxValue*100,0,100)}%`;bar.title=`${humanDate(date)}: ${Core.round1(values[index])}`;track.append(bar);column.append(track,element('small','',progressDays===7?new Intl.DateTimeFormat('ru-RU',{weekday:'short'}).format(new Date(`${date}T12:00:00`)):String(Number(date.slice(-2)))));root.append(column);});root.style.setProperty('--goal',`${Core.clamp(goal/maxValue*100,0,100)}%`);}
+function renderWeight(dates){const points=dates.map(date=>({date,value:state.wellness[date]?.weightKg})).filter(x=>Core.num(x.value)>0);const root=document.getElementById('weight-history');root.replaceChildren();points.slice(-8).reverse().forEach(point=>{const row=element('div','history-row');row.append(element('span','',humanDate(point.date)),element('strong','',`${Core.round1(point.value)} кг`));root.append(row);});if(!points.length)root.append(element('div','empty-state','Вес пока не записан.'));const first=points[0]?.value,last=points.at(-1)?.value;document.getElementById('weight-trend').textContent=points.length>1?`${last-first>0?'+':''}${Core.round1(last-first)} кг`:'';}
 
-function selectedExercise() {
-  return EXERCISES.find(exercise => exercise.id === document.getElementById('workout-exercise').value) || EXERCISES[0];
-}
+function renderSettings(){[['goal-kcal',state.goals.kcal],['goal-protein',state.goals.p],['goal-fat',state.goals.f],['goal-carb',state.goals.c],['goal-mode',state.goals.mode],['activity-credit',state.goals.activityCredit],['profile-weight',state.profile.weightKg],['profile-height',state.profile.heightCm],['profile-age',state.profile.age],['profile-sex',state.profile.sex],['profile-activity',state.profile.activityLevel],['profile-stride',state.profile.strideCm]].forEach(([id,value])=>document.getElementById(id).value=value);updateGoalSuggestion();const last=state.lastBackupAt?new Date(state.lastBackupAt):null;const days=last?Math.floor((Date.now()-last.getTime())/86400000):Infinity;document.getElementById('backup-status').textContent=last?`Последняя копия: ${new Intl.DateTimeFormat('ru-RU').format(last)}${days>=14?' — пора обновить.':''}`:'Резервной копии ещё нет. Данные хранятся только в этом браузере.';}
+function profileFromForm(){return {weightKg:Core.num(document.getElementById('profile-weight').value),heightCm:Core.num(document.getElementById('profile-height').value),age:Core.num(document.getElementById('profile-age').value),sex:document.getElementById('profile-sex').value,activityLevel:Core.num(document.getElementById('profile-activity').value),strideCm:Core.num(document.getElementById('profile-stride').value)};}
+function updateGoalSuggestion(){const profile=profileFromForm(),mode=document.getElementById('goal-mode').value||state.goals.mode,kcal=Core.suggestedCalories(profile,mode);document.getElementById('goal-suggestion').textContent=`Ориентир по формуле Mifflin–St Jeor: ≈ ${kcal} ккал/день.`;return kcal;}
 
-function updateWorkoutFields() {
-  const exercise = selectedExercise();
-  const strength = exercise.type === 'strength';
-  document.getElementById('strength-fields').classList.toggle('hidden', !strength);
-  document.getElementById('cardio-fields').classList.toggle('hidden', strength);
-  document.getElementById('running-interval-section').classList.toggle('hidden', !exercise.supportsIntervals);
-  document.getElementById('speed-label').classList.toggle('hidden', exercise.id !== 'running' && exercise.id !== 'cycling' && exercise.id !== 'brisk-walk');
-  updateWorkoutPreview();
-}
+function showView(id){document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===id));document.querySelectorAll('.tab').forEach(tab=>{const active=tab.dataset.view===id;tab.classList.toggle('active',active);if(active)tab.setAttribute('aria-current','page');else tab.removeAttribute('aria-current');});if(id==='progress-view')renderProgress();if(id==='products-view')renderProducts();if(id==='settings-view')renderSettings();window.scrollTo({top:0,behavior:'instant'});}
+function renderAll(){renderToday();renderProducts();renderSettings();renderProgress();}
 
-function renderRunningIntervals() {
-  const container = document.getElementById('running-intervals');
-  container.innerHTML = '';
-  runningIntervals.forEach((interval, index) => {
-    const row = document.createElement('div');
-    row.className = 'interval-row';
-    const minutes = document.createElement('input');
-    minutes.type = 'number'; minutes.min = '0.5'; minutes.step = '0.5'; minutes.inputMode = 'decimal'; minutes.value = interval.minutes; minutes.setAttribute('aria-label', 'Минуты');
-    minutes.addEventListener('input', () => { runningIntervals[index].minutes = num(minutes.value); updateWorkoutPreview(); });
-    const speed = document.createElement('input');
-    speed.type = 'number'; speed.min = '1'; speed.max = '40'; speed.step = '0.1'; speed.inputMode = 'decimal'; speed.value = interval.speed; speed.setAttribute('aria-label', 'Скорость');
-    speed.addEventListener('input', () => { runningIntervals[index].speed = num(speed.value); updateWorkoutPreview(); });
-    const minutesUnit = document.createElement('span'); minutesUnit.textContent = 'мин';
-    const speedUnit = document.createElement('span'); speedUnit.textContent = 'км/ч';
-    const del = document.createElement('button'); del.type = 'button'; del.textContent = '×'; del.setAttribute('aria-label', 'Удалить отрезок');
-    del.addEventListener('click', () => { runningIntervals.splice(index, 1); renderRunningIntervals(); updateWorkoutPreview(); });
-    row.append(minutes, minutesUnit, speed, speedUnit, del);
-    container.appendChild(row);
-  });
-}
+document.querySelectorAll('.tab').forEach(button=>button.addEventListener('click',()=>showView(button.dataset.view)));
+document.getElementById('prev-day').addEventListener('click',()=>{state.selectedDate=dateOffset(state.selectedDate,-1);saveState();renderToday();});
+document.getElementById('next-day').addEventListener('click',()=>{state.selectedDate=dateOffset(state.selectedDate,1);saveState();renderToday();});
+document.getElementById('today-button').addEventListener('click',()=>{state.selectedDate=Core.localDateString();saveState();renderToday();});
+document.getElementById('add-entry').addEventListener('click',()=>openEntryDialog());
+document.getElementById('entry-product-search').addEventListener('input',()=>{activeProductId='';renderProductPicker();updateEntryPreview();});
+['entry-amount','entry-unit'].forEach(id=>document.getElementById(id).addEventListener('input',updateEntryPreview));
+document.getElementById('entry-form').addEventListener('submit',event=>{event.preventDefault();const product=selectedProduct(),grams=entryGrams();if(!product||grams<=0){showToast('Выберите продукт и количество');return;}const entry={id:document.getElementById('entry-edit-id').value||Core.uid('entry'),date:state.selectedDate,meal:document.getElementById('entry-meal').value,grams,name:product.name,productId:product.id,p:product.p,f:product.f,c:product.c,kcal:product.kcal};const index=state.entries.findIndex(item=>item.id===entry.id);if(index>=0)state.entries[index]=entry;else state.entries.push(entry);state.recentProductIds=[product.id,...state.recentProductIds.filter(id=>id!==product.id)].slice(0,20);saveState();document.getElementById('entry-dialog').close();renderToday();showToast(index>=0?'Запись обновлена':'Добавлено');});
 
-function workoutEstimate() {
-  const exercise = selectedExercise();
-  if (exercise.type === 'strength') {
-    return {
-      exercise,
-      ...strengthEstimate(
-        exercise,
-        document.getElementById('workout-sets').value,
-        document.getElementById('workout-reps').value,
-        document.getElementById('workout-weight').value,
-        document.getElementById('workout-rest').value
-      )
-    };
-  }
-  return {
-    exercise,
-    ...cardioEstimate(
-      exercise,
-      document.getElementById('workout-duration').value,
-      document.getElementById('workout-distance').value,
-      document.getElementById('workout-speed').value,
-      document.getElementById('workout-intensity').value,
-      runningIntervals
-    )
-  };
-}
+document.getElementById('edit-walking').addEventListener('click',()=>{const saved=state.dailyMovement[state.selectedDate]||{};document.getElementById('walking-steps').value=Core.num(saved.steps);document.getElementById('walking-distance').value=saved.distanceKm??'';updateWalkingPreview();document.getElementById('walking-dialog').showModal();});
+function updateWalkingPreview(){const steps=Core.num(document.getElementById('walking-steps').value),raw=document.getElementById('walking-distance').value.trim(),distance=raw?Core.num(raw):steps*state.profile.strideCm/100000;document.getElementById('walking-preview').textContent=`≈ ${Core.round2(distance)} км · ≈ ${Math.round(state.profile.weightKg*distance*.5)} ккал`;}
+['walking-steps','walking-distance'].forEach(id=>document.getElementById(id).addEventListener('input',updateWalkingPreview));
+document.getElementById('walking-form').addEventListener('submit',event=>{event.preventDefault();const raw=document.getElementById('walking-distance').value.trim();state.dailyMovement[state.selectedDate]={steps:Math.round(Core.num(document.getElementById('walking-steps').value)),distanceKm:raw?Core.num(raw):''};saveState();document.getElementById('walking-dialog').close();renderToday();showToast('Ходьба сохранена');});
 
-function updateWorkoutPreview() {
-  const estimate = workoutEstimate();
-  const preview = document.getElementById('workout-preview');
-  if (estimate.exercise.type === 'strength') {
-    preview.textContent = `≈ ${Math.round(estimate.calories)} ккал за тренировку · ${estimate.totalReps} повторений · ≈ ${round2(estimate.perRep)} ккал за повторение`;
-  } else {
-    preview.textContent = `≈ ${Math.round(estimate.calories)} ккал · ${round1(estimate.minutes)} мин · ${round2(estimate.distance)} км`;
-  }
-}
+document.getElementById('add-workout').addEventListener('click',()=>openWorkoutDialog());document.getElementById('workout-exercise').addEventListener('change',updateWorkoutFields);document.getElementById('add-strength-set').addEventListener('click',()=>addStrengthSet(strengthSets.at(-1)?.reps||10,strengthSets.at(-1)?.weight||10));['workout-rest','workout-duration','workout-distance','workout-speed','workout-intensity'].forEach(id=>document.getElementById(id).addEventListener('input',updateWorkoutPreview));document.getElementById('add-running-interval').addEventListener('click',()=>{runningIntervals.push({minutes:5,speed:runningIntervals.at(-1)?.speed||8});renderRunningIntervals();updateWorkoutPreview();});
+document.getElementById('workout-form').addEventListener('submit',event=>{event.preventDefault();const estimate=workoutEstimate();if(estimate.calories<=0){showToast('Укажите объём тренировки');return;}const editId=document.getElementById('workout-edit-id').value;const activity={id:editId||Core.uid('activity'),date:state.selectedDate,exerciseId:estimate.exercise.id,name:estimate.exercise.name,type:estimate.exercise.type,calories:Core.round2(estimate.calories)};if(estimate.exercise.type==='strength'){const avgReps=strengthSets.length?estimate.reps/strengthSets.length:0,avgWeight=estimate.reps?estimate.volume/estimate.reps:0;Object.assign(activity,{sets:strengthSets.length,reps:Core.round1(avgReps),liftedWeight:Core.round1(avgWeight),restSeconds:estimate.restSeconds,totalReps:estimate.reps,setDetails:clone(strengthSets),details:`${strengthSets.length} подх. · ${estimate.reps} повт. · объём ${Math.round(estimate.volume)} кг`});}else Object.assign(activity,{duration:estimate.minutes,distance:estimate.distance,speed:estimate.speed||0,intensity:document.getElementById('workout-intensity').value,intervals:estimate.exercise.id==='running'?clone(runningIntervals):[],details:`${Core.round1(estimate.minutes)} мин${estimate.distance?` · ${Core.round2(estimate.distance)} км`:''}`});const index=state.activities.findIndex(item=>item.id===activity.id);if(index>=0)state.activities[index]=activity;else state.activities.push(activity);if(document.getElementById('save-workout-template').checked){const name=prompt('Название шаблона',activity.name);if(name)state.workoutTemplates.push({id:Core.uid('template'),name:name.trim().slice(0,80),activities:[clone(activity)]});}saveState();document.getElementById('workout-dialog').close();renderToday();showToast(index>=0?'Тренировка обновлена':'Тренировка добавлена');});
+document.getElementById('apply-workout-template').addEventListener('click',()=>{renderTemplates();document.getElementById('template-dialog').showModal();});
+document.getElementById('save-day-template').addEventListener('click',()=>{const activities=state.activities.filter(activity=>activity.date===state.selectedDate);if(!activities.length){showToast('В этот день нет тренировок');return;}const name=prompt('Название шаблона',`Тренировка ${humanDate(state.selectedDate)}`);if(!name)return;state.workoutTemplates.push({id:Core.uid('template'),name:name.trim().slice(0,80),activities:clone(activities)});saveState();renderTemplates();showToast('Шаблон дня сохранён');});
 
-function updateWalkingPreview() {
-  const steps = Math.max(0, num(document.getElementById('walking-steps').value));
-  const distanceRaw = document.getElementById('walking-distance').value.trim();
-  const distance = distanceRaw ? Math.max(0, num(distanceRaw)) : steps * num(state.profile.strideCm) / 100000;
-  const calories = num(state.profile.weightKg) * distance * 0.5;
-  document.getElementById('walking-preview').textContent = `≈ ${round2(distance)} км · ≈ ${Math.round(calories)} ккал`;
-}
+document.getElementById('log-recovery').addEventListener('click',()=>openRecoveryDialog(state.selectedDate));document.getElementById('progress-log-recovery').addEventListener('click',()=>openRecoveryDialog(Core.localDateString()));
+document.getElementById('recovery-form').addEventListener('submit',event=>{event.preventDefault();const date=document.getElementById('recovery-date').value;if(!Core.isDateString(date))return;state.wellness[date]={sleepHours:Core.num(document.getElementById('recovery-sleep').value),sleepQuality:Core.num(document.getElementById('recovery-quality').value),fatigue:Core.num(document.getElementById('recovery-fatigue').value),readiness:Core.num(document.getElementById('recovery-readiness').value),weightKg:document.getElementById('recovery-weight').value.trim()?Core.num(document.getElementById('recovery-weight').value):''};saveState();document.getElementById('recovery-dialog').close();renderToday();renderProgress();showToast('Восстановление сохранено');});
+document.querySelectorAll('.range-button').forEach(button=>button.addEventListener('click',()=>{progressDays=Core.num(button.dataset.days);document.querySelectorAll('.range-button').forEach(item=>item.classList.toggle('active',item===button));renderProgress();}));
 
-function openWorkoutDialog() {
-  runningIntervals = [];
-  renderRunningIntervals();
-  updateWorkoutFields();
-  document.getElementById('workout-dialog').showModal();
-}
+document.getElementById('add-product').addEventListener('click',()=>openProductDialog());document.getElementById('product-search').addEventListener('input',renderProducts);document.querySelectorAll('[data-product-filter]').forEach(button=>button.addEventListener('click',()=>{productFilter=button.dataset.productFilter;document.querySelectorAll('[data-product-filter]').forEach(item=>item.classList.toggle('active',item===button));renderProducts();}));
+document.getElementById('product-form').addEventListener('submit',event=>{event.preventDefault();const id=document.getElementById('product-edit-id').value||Core.uid('product'),p=Core.num(document.getElementById('product-protein').value),f=Core.num(document.getElementById('product-fat').value),c=Core.num(document.getElementById('product-carb').value),raw=document.getElementById('product-kcal').value.trim();const product={id,name:document.getElementById('product-name').value.trim(),p,f,c,kcal:raw?Core.num(raw):Math.round(p*4+f*9+c*4),servingName:document.getElementById('product-serving-name').value.trim()||'порция',servingGrams:Math.max(.1,Core.num(document.getElementById('product-serving-grams').value)||100),builtIn:false,favorite:state.products.find(x=>x.id===id)?.favorite||false};const index=state.products.findIndex(x=>x.id===id);if(index>=0)state.products[index]=product;else state.products.push(product);saveState();document.getElementById('product-dialog').close();renderProducts();showToast('Продукт сохранён');});
 
-function openWalkingDialog() {
-  const saved = state.dailyMovement[state.selectedDate] || {};
-  document.getElementById('walking-steps').value = num(saved.steps);
-  document.getElementById('walking-distance').value = saved.distanceKm ?? '';
-  updateWalkingPreview();
-  document.getElementById('walking-dialog').showModal();
-}
+document.getElementById('goals-form').addEventListener('submit',event=>{event.preventDefault();state.goals={kcal:Core.num(document.getElementById('goal-kcal').value),p:Core.num(document.getElementById('goal-protein').value),f:Core.num(document.getElementById('goal-fat').value),c:Core.num(document.getElementById('goal-carb').value),activityCredit:Core.num(document.getElementById('activity-credit').value),mode:document.getElementById('goal-mode').value};saveState();renderToday();showToast('Цели сохранены');});
+document.getElementById('profile-form').addEventListener('submit',event=>{event.preventDefault();state.profile=profileFromForm();saveState();renderToday();showToast('Профиль сохранён');});document.getElementById('calculate-goal').addEventListener('click',()=>{document.getElementById('goal-kcal').value=updateGoalSuggestion();showToast('Ориентир перенесён в цель');});['profile-weight','profile-height','profile-age','profile-sex','profile-activity','goal-mode'].forEach(id=>document.getElementById(id).addEventListener('input',updateGoalSuggestion));
 
-function deleteEntry(id) {
-  state.entries = state.entries.filter(entry => entry.id !== id);
-  saveState(); renderToday(); toast('Запись удалена');
-}
+document.getElementById('export-data').addEventListener('click',()=>{state.lastBackupAt=new Date().toISOString();saveState();const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),anchor=document.createElement('a');anchor.href=URL.createObjectURL(blob);anchor.download=`bju-backup-${Core.localDateString()}.json`;anchor.click();setTimeout(()=>URL.revokeObjectURL(anchor.href),1000);renderSettings();});
+function validateImport(parsed){if(!parsed||typeof parsed!=='object'||Array.isArray(parsed))throw new Error('format');if(!Array.isArray(parsed.products)||!Array.isArray(parsed.entries)||!parsed.goals||typeof parsed.goals!=='object')throw new Error('shape');if(parsed.products.some(p=>!p||typeof p.name!=='string'||!p.name.trim()||['p','f','c','kcal'].some(k=>!Number.isFinite(Number(p[k])))))throw new Error('products');if(parsed.entries.some(e=>!e||!Core.isDateString(e.date)||typeof e.name!=='string'||!e.name.trim()||!Number.isFinite(Number(e.grams))))throw new Error('entries');return Core.normalizeState(parsed,DEFAULT_PRODUCTS);}
+document.getElementById('import-data').addEventListener('change',async event=>{const file=event.target.files?.[0];if(!file)return;try{if(file.size>5*1024*1024)throw new Error('size');const candidate=validateImport(JSON.parse(await file.text()));localStorage.setItem(PRE_IMPORT_KEY,localStorage.getItem(STORAGE_KEY)||'');if(!saveState(candidate,true))throw new Error('save');state=candidate;renderAll();showToast('Данные импортированы');}catch{alert('Не удалось импортировать файл: он повреждён, слишком большой или имеет неподдерживаемый формат. Текущие данные не изменены.');}event.target.value='';});
 
-function deleteActivity(id) {
-  state.activities = state.activities.filter(activity => activity.id !== id);
-  saveState(); renderToday(); toast('Тренировка удалена');
-}
+document.getElementById('install-help').addEventListener('click',()=>document.getElementById('help-dialog').showModal());document.querySelectorAll('[data-close]').forEach(button=>button.addEventListener('click',()=>document.getElementById(button.dataset.close).close()));document.getElementById('cancel-rest-timer').addEventListener('click',()=>{clearInterval(restTimer);document.getElementById('rest-timer').classList.add('hidden');});
 
-function deleteProduct(id) {
-  const product = state.products.find(item => item.id === id);
-  if (!product || !confirm(`Удалить «${product.name}» из базы? История питания сохранится.`)) return;
-  state.products = state.products.filter(item => item.id !== id);
-  saveState(); renderProducts(); populateEntryProducts(); toast('Продукт удалён');
-}
-
-function openProductDialog(product = null) {
-  document.getElementById('product-edit-id').value = product?.id || '';
-  document.getElementById('product-name').value = product?.name || '';
-  document.getElementById('product-protein').value = product?.p ?? '';
-  document.getElementById('product-fat').value = product?.f ?? '';
-  document.getElementById('product-carb').value = product?.c ?? '';
-  document.getElementById('product-kcal').value = product?.kcal ?? '';
-  document.querySelector('#product-dialog h2').textContent = product ? 'Редактировать продукт' : 'Новый продукт';
-  document.getElementById('product-dialog').showModal();
-}
-
-function toast(message) {
-  const element = document.getElementById('toast');
-  element.textContent = message; element.classList.add('show');
-  clearTimeout(toast.timer); toast.timer = setTimeout(() => element.classList.remove('show'), 1800);
-}
-
-function showView(id) {
-  document.querySelectorAll('.view').forEach(view => view.classList.toggle('active', view.id === id));
-  document.querySelectorAll('.tab').forEach(tab => tab.classList.toggle('active', tab.dataset.view === id));
-  if (id === 'products-view') renderProducts();
-  if (id === 'settings-view') renderSettings();
-  window.scrollTo({ top: 0, behavior: 'instant' });
-}
-
-document.querySelectorAll('.tab').forEach(button => button.addEventListener('click', () => showView(button.dataset.view)));
-document.getElementById('prev-day').addEventListener('click', () => offsetSelectedDate(-1));
-document.getElementById('next-day').addEventListener('click', () => offsetSelectedDate(1));
-document.getElementById('today-button').addEventListener('click', () => { state.selectedDate = localDateString(); saveState(); renderToday(); });
-document.getElementById('add-entry').addEventListener('click', () => { populateEntryProducts(); document.getElementById('entry-dialog').showModal(); });
-document.getElementById('add-workout').addEventListener('click', openWorkoutDialog);
-document.getElementById('edit-walking').addEventListener('click', openWalkingDialog);
-document.getElementById('add-product').addEventListener('click', () => openProductDialog());
-document.getElementById('product-search').addEventListener('input', renderProducts);
-document.getElementById('entry-product').addEventListener('change', updateEntryPreview);
-document.getElementById('entry-grams').addEventListener('input', updateEntryPreview);
-document.getElementById('workout-exercise').addEventListener('change', updateWorkoutFields);
-['workout-sets', 'workout-reps', 'workout-weight', 'workout-rest', 'workout-duration', 'workout-distance', 'workout-speed', 'workout-intensity']
-  .forEach(id => document.getElementById(id).addEventListener('input', updateWorkoutPreview));
-['walking-steps', 'walking-distance'].forEach(id => document.getElementById(id).addEventListener('input', updateWalkingPreview));
-document.getElementById('add-running-interval').addEventListener('click', () => {
-  runningIntervals.push({ minutes: 5, speed: runningIntervals.length ? runningIntervals[runningIntervals.length - 1].speed : 8 });
-  renderRunningIntervals(); updateWorkoutPreview();
-});
-document.getElementById('install-help').addEventListener('click', () => document.getElementById('help-dialog').showModal());
-document.querySelectorAll('[data-close]').forEach(button => button.addEventListener('click', () => document.getElementById(button.dataset.close).close()));
-
-document.getElementById('entry-form').addEventListener('submit', event => {
-  event.preventDefault();
-  const product = state.products.find(item => item.id === document.getElementById('entry-product').value);
-  const grams = num(document.getElementById('entry-grams').value);
-  if (!product || grams <= 0) return;
-  state.entries.push({ id: uid(), date: state.selectedDate, meal: document.getElementById('entry-meal').value, grams, name: product.name, p: product.p, f: product.f, c: product.c, kcal: product.kcal });
-  saveState(); document.getElementById('entry-dialog').close(); renderToday(); toast('Добавлено');
-});
-
-document.getElementById('workout-form').addEventListener('submit', event => {
-  event.preventDefault();
-  const estimate = workoutEstimate();
-  if (estimate.calories <= 0) { alert('Укажите объём тренировки: подходы и повторения либо время/интервалы.'); return; }
-  let details;
-  const activity = { id: uid(), date: state.selectedDate, exerciseId: estimate.exercise.id, name: estimate.exercise.name, type: estimate.exercise.type, calories: round2(estimate.calories) };
-  if (estimate.exercise.type === 'strength') {
-    const sets = num(document.getElementById('workout-sets').value);
-    const reps = num(document.getElementById('workout-reps').value);
-    const liftedWeight = num(document.getElementById('workout-weight').value);
-    const restSeconds = num(document.getElementById('workout-rest').value);
-    details = `${sets} × ${reps} · ${round1(liftedWeight)} кг`;
-    Object.assign(activity, { sets, reps, liftedWeight, restSeconds, totalReps: estimate.totalReps });
-  } else {
-    details = `${round1(estimate.minutes)} мин${estimate.distance ? ` · ${round2(estimate.distance)} км` : ''}`;
-    Object.assign(activity, {
-      duration: estimate.minutes,
-      distance: estimate.distance,
-      speed: estimate.speed || 0,
-      intensity: document.getElementById('workout-intensity').value,
-      intervals: estimate.exercise.id === 'running' ? runningIntervals.map(interval => ({ ...interval })) : []
-    });
-  }
-  activity.details = details;
-  state.activities.push(activity);
-  saveState(); document.getElementById('workout-dialog').close(); renderToday(); toast('Тренировка добавлена');
-});
-
-document.getElementById('walking-form').addEventListener('submit', event => {
-  event.preventDefault();
-  const steps = Math.max(0, Math.round(num(document.getElementById('walking-steps').value)));
-  const distanceRaw = document.getElementById('walking-distance').value.trim();
-  state.dailyMovement[state.selectedDate] = { steps, distanceKm: distanceRaw ? Math.max(0, num(distanceRaw)) : '' };
-  saveState(); document.getElementById('walking-dialog').close(); renderToday(); toast('Ходьба сохранена');
-});
-
-document.getElementById('product-form').addEventListener('submit', event => {
-  event.preventDefault();
-  const id = document.getElementById('product-edit-id').value || uid();
-  const p = num(document.getElementById('product-protein').value);
-  const f = num(document.getElementById('product-fat').value);
-  const c = num(document.getElementById('product-carb').value);
-  const kcalRaw = document.getElementById('product-kcal').value.trim();
-  const kcal = kcalRaw ? num(kcalRaw) : Math.round(p * 4 + f * 9 + c * 4);
-  const product = { id, name: document.getElementById('product-name').value.trim(), p, f, c, kcal, builtIn: false };
-  const index = state.products.findIndex(item => item.id === id);
-  if (index >= 0) state.products[index] = product; else state.products.push(product);
-  saveState(); document.getElementById('product-dialog').close(); renderProducts(); populateEntryProducts(); toast('Продукт сохранён');
-});
-
-document.getElementById('goals-form').addEventListener('submit', event => {
-  event.preventDefault();
-  state.goals = {
-    kcal: num(document.getElementById('goal-kcal').value),
-    p: num(document.getElementById('goal-protein').value),
-    f: num(document.getElementById('goal-fat').value),
-    c: num(document.getElementById('goal-carb').value)
-  };
-  saveState(); renderToday(); toast('Цели сохранены');
-});
-
-document.getElementById('profile-form').addEventListener('submit', event => {
-  event.preventDefault();
-  state.profile = {
-    weightKg: clamp(num(document.getElementById('profile-weight').value), 25, 350),
-    strideCm: clamp(num(document.getElementById('profile-stride').value), 30, 150)
-  };
-  saveState(); renderToday(); toast('Параметры сохранены');
-});
-
-document.getElementById('export-data').addEventListener('click', () => {
-  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
-  const anchor = document.createElement('a');
-  anchor.href = URL.createObjectURL(blob); anchor.download = `bju-backup-${localDateString()}.json`; anchor.click(); URL.revokeObjectURL(anchor.href);
-});
-
-document.getElementById('import-data').addEventListener('change', async event => {
-  const file = event.target.files?.[0]; if (!file) return;
-  try {
-    const parsed = JSON.parse(await file.text());
-    if (!parsed || !Array.isArray(parsed.products) || !Array.isArray(parsed.entries) || !parsed.goals) throw new Error();
-    const defaults = defaultState();
-    state = {
-      ...defaults,
-      ...parsed,
-      goals: { ...defaults.goals, ...(parsed.goals || {}) },
-      profile: { ...defaults.profile, ...(parsed.profile || {}) },
-      productCatalogVersion: PRODUCT_CATALOG_VERSION,
-      products: num(parsed.productCatalogVersion) < PRODUCT_CATALOG_VERSION
-        ? mergeDefaultProducts(parsed.products)
-        : parsed.products,
-      entries: parsed.entries,
-      activities: Array.isArray(parsed.activities) ? parsed.activities : [],
-      dailyMovement: parsed.dailyMovement && typeof parsed.dailyMovement === 'object' ? parsed.dailyMovement : {},
-      selectedDate: localDateString()
-    };
-    saveState(); renderToday(); renderProducts(); renderSettings(); populateEntryProducts(); toast('Данные импортированы');
-  } catch { alert('Не удалось импортировать файл. Проверьте, что это резервная копия БЖУ.'); }
-  event.target.value = '';
-});
-
-populateExercises();
-renderRunningIntervals();
-renderToday();
-renderProducts();
-renderSettings();
-populateEntryProducts();
-updateWorkoutFields();
-
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
-}
+populateExercises();renderAll();updateWorkoutFields();
+setTimeout(()=>{const hasDiary=state.entries.length||state.activities.length||Object.keys(state.wellness).length;const last=state.lastBackupAt?new Date(state.lastBackupAt).getTime():0;if(hasDiary&&(!last||Date.now()-last>14*86400000))showToast('Пора сделать резервную копию','Открыть',()=>showView('settings-view'));},900);
+if('serviceWorker'in navigator){window.addEventListener('load',async()=>{try{const registration=await navigator.serviceWorker.register('./sw.js');registration.addEventListener('updatefound',()=>{const worker=registration.installing;worker?.addEventListener('statechange',()=>{if(worker.state==='installed'&&navigator.serviceWorker.controller)showToast('Доступна новая версия','Обновить',()=>window.location.reload());});});}catch{showToast('Офлайн-режим временно недоступен');}});}
