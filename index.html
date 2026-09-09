@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#f5f5f7" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="БЖУ" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
+  <title>БЖУ</title>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <div class="eyebrow">Дневник питания</div>
+        <h1>БЖУ</h1>
+      </div>
+      <button id="install-help" class="icon-button" aria-label="Как установить">i</button>
+    </header>
+
+    <main>
+      <section id="today-view" class="view active">
+        <div class="date-row card">
+          <button id="prev-day" class="ghost-button" aria-label="Предыдущий день">‹</button>
+          <div class="date-center">
+            <div id="selected-date-label" class="date-label"></div>
+            <button id="today-button" class="today-link">Сегодня</button>
+          </div>
+          <button id="next-day" class="ghost-button" aria-label="Следующий день">›</button>
+        </div>
+
+        <section class="summary card">
+          <div class="calorie-ring" id="calorie-ring">
+            <div>
+              <strong id="kcal-total">0</strong>
+              <span>ккал</span>
+            </div>
+          </div>
+          <div class="calorie-copy">
+            <div class="goal-line"><span>Цель</span><strong id="kcal-goal">2200</strong></div>
+            <div class="goal-line"><span>Осталось</span><strong id="kcal-left">2200</strong></div>
+          </div>
+        </section>
+
+        <section class="macro-grid">
+          <article class="macro-card card">
+            <div class="macro-title">Белки</div>
+            <div class="macro-value"><strong id="protein-total">0</strong> / <span id="protein-goal">160</span> г</div>
+            <div class="progress"><div id="protein-progress"></div></div>
+          </article>
+          <article class="macro-card card">
+            <div class="macro-title">Жиры</div>
+            <div class="macro-value"><strong id="fat-total">0</strong> / <span id="fat-goal">75</span> г</div>
+            <div class="progress"><div id="fat-progress"></div></div>
+          </article>
+          <article class="macro-card card">
+            <div class="macro-title">Углеводы</div>
+            <div class="macro-value"><strong id="carb-total">0</strong> / <span id="carb-goal">230</span> г</div>
+            <div class="progress"><div id="carb-progress"></div></div>
+          </article>
+        </section>
+
+        <div id="meals"></div>
+
+        <button id="add-entry" class="fab">+ Добавить еду</button>
+      </section>
+
+      <section id="products-view" class="view">
+        <div class="section-heading">
+          <div>
+            <div class="eyebrow">Локальная база</div>
+            <h2>Продукты</h2>
+          </div>
+          <button id="add-product" class="primary-small">+ Новый</button>
+        </div>
+        <div class="search-wrap card">
+          <input id="product-search" type="search" placeholder="Найти продукт" autocomplete="off" />
+        </div>
+        <div id="products-list" class="list-stack"></div>
+      </section>
+
+      <section id="settings-view" class="view">
+        <div class="section-heading">
+          <div>
+            <div class="eyebrow">Параметры</div>
+            <h2>Настройки</h2>
+          </div>
+        </div>
+
+        <form id="goals-form" class="card settings-card">
+          <h3>Дневная цель</h3>
+          <div class="field-grid">
+            <label>Калории<input id="goal-kcal" type="number" min="0" step="1" inputmode="numeric" /></label>
+            <label>Белки, г<input id="goal-protein" type="number" min="0" step="1" inputmode="decimal" /></label>
+            <label>Жиры, г<input id="goal-fat" type="number" min="0" step="1" inputmode="decimal" /></label>
+            <label>Углеводы, г<input id="goal-carb" type="number" min="0" step="1" inputmode="decimal" /></label>
+          </div>
+          <button class="primary" type="submit">Сохранить цели</button>
+        </form>
+
+        <section class="card settings-card">
+          <h3>Резервная копия</h3>
+          <p class="muted">Данные хранятся только на этом устройстве. Экспорт пригодится перед очисткой Safari или сменой телефона.</p>
+          <div class="button-stack">
+            <button id="export-data" class="secondary" type="button">Экспортировать JSON</button>
+            <label class="secondary file-button">Импортировать JSON<input id="import-data" type="file" accept="application/json" hidden /></label>
+          </div>
+        </section>
+
+        <section class="card settings-card install-card">
+          <h3>Установка на iPhone</h3>
+          <p class="muted">Откройте эту страницу в Safari → «Поделиться» → «На экран “Домой”». После этого БЖУ запускается отдельным приложением и работает офлайн.</p>
+        </section>
+      </section>
+    </main>
+
+    <nav class="tabbar" aria-label="Навигация">
+      <button class="tab active" data-view="today-view"><span>◉</span><small>Сегодня</small></button>
+      <button class="tab" data-view="products-view"><span>▦</span><small>Продукты</small></button>
+      <button class="tab" data-view="settings-view"><span>⚙</span><small>Настройки</small></button>
+    </nav>
+  </div>
+
+  <dialog id="entry-dialog" class="sheet">
+    <form method="dialog" id="entry-form" class="sheet-body">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title-row">
+        <h2>Добавить еду</h2>
+        <button type="button" class="close-button" data-close="entry-dialog">×</button>
+      </div>
+      <label>Приём пищи
+        <select id="entry-meal">
+          <option value="breakfast">Завтрак</option>
+          <option value="lunch">Обед</option>
+          <option value="dinner">Ужин</option>
+          <option value="snack">Перекус</option>
+        </select>
+      </label>
+      <label>Продукт
+        <select id="entry-product"></select>
+      </label>
+      <label>Количество, г
+        <input id="entry-grams" type="number" min="0.1" step="0.1" inputmode="decimal" value="100" required />
+      </label>
+      <div id="entry-preview" class="preview card-inset"></div>
+      <button type="submit" class="primary">Добавить</button>
+    </form>
+  </dialog>
+
+  <dialog id="product-dialog" class="sheet">
+    <form method="dialog" id="product-form" class="sheet-body">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title-row">
+        <h2>Новый продукт</h2>
+        <button type="button" class="close-button" data-close="product-dialog">×</button>
+      </div>
+      <input id="product-edit-id" type="hidden" />
+      <label>Название<input id="product-name" type="text" maxlength="80" required /></label>
+      <div class="field-grid">
+        <label>Белки / 100 г<input id="product-protein" type="number" min="0" step="0.1" inputmode="decimal" required /></label>
+        <label>Жиры / 100 г<input id="product-fat" type="number" min="0" step="0.1" inputmode="decimal" required /></label>
+        <label>Углеводы / 100 г<input id="product-carb" type="number" min="0" step="0.1" inputmode="decimal" required /></label>
+        <label>Ккал / 100 г<input id="product-kcal" type="number" min="0" step="1" inputmode="decimal" /></label>
+      </div>
+      <p class="muted tiny">Если ккал оставить пустыми, они посчитаются по формуле 4×Б + 9×Ж + 4×У.</p>
+      <button type="submit" class="primary">Сохранить продукт</button>
+    </form>
+  </dialog>
+
+  <dialog id="help-dialog" class="sheet">
+    <div class="sheet-body">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title-row">
+        <h2>Как установить бесплатно</h2>
+        <button type="button" class="close-button" data-close="help-dialog">×</button>
+      </div>
+      <ol class="steps">
+        <li>Откройте адрес приложения именно в Safari на iPhone.</li>
+        <li>Нажмите кнопку «Поделиться».</li>
+        <li>Выберите «На экран “Домой”».</li>
+        <li>Подтвердите добавление. Появится отдельная иконка «БЖУ».</li>
+      </ol>
+      <p class="muted">Никаких сертификатов Apple и ежегодной оплаты для этого варианта не требуется.</p>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status"></div>
+  <script src="app.js"></script>
+</body>
+</html>
